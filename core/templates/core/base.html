@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}SWD Store{% endblock %}</title>
+  <title>{% block title %}BITS Pilani Store{% endblock %}</title>
 
   <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/icon_192.png' %}">
   <link rel="icon" type="image/png" href="{% static 'images/icon.png' %}">
@@ -289,26 +289,25 @@
       height: 60px;
     }
 
-    /* Nav items */
-    .mobile-nav a {
+    /* Nav items — scoped away from FAB to avoid specificity conflicts */
+    .mobile-nav a:not(.mobile-nav-add) {
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; gap: 3px; font-size: .65rem; font-weight: 600;
       color: var(--muted); height: 100%; position: relative;
       transition: color .18s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mobile-nav a i {
+    .mobile-nav a:not(.mobile-nav-add) i {
       font-size: 1.1rem;
       transition: transform .25s cubic-bezier(.34,1.7,.64,1);
     }
-    .mobile-nav a span {
-      transition: opacity .18s;
-    }
-    .mobile-nav a.active, .mobile-nav a:hover { color: var(--orange); }
-    .mobile-nav a.active i { transform: scale(1.18) translateY(-1px); }
+    .mobile-nav a:not(.mobile-nav-add) span { transition: opacity .18s; }
+    .mobile-nav a:not(.mobile-nav-add):hover,
+    .mobile-nav a:not(.mobile-nav-add).active { color: var(--orange); }
+    .mobile-nav a:not(.mobile-nav-add).active i { transform: scale(1.18) translateY(-1px); }
 
-    /* Active indicator dot */
-    .mobile-nav a::before {
+    /* Active indicator bar */
+    .mobile-nav a:not(.mobile-nav-add)::before {
       content: '';
       position: absolute; top: 5px;
       width: 18px; height: 3px;
@@ -316,12 +315,12 @@
       transform: scaleX(0);
       transition: transform .25s cubic-bezier(.34,1.7,.64,1);
     }
-    .mobile-nav a.active::before { transform: scaleX(1); }
+    .mobile-nav a:not(.mobile-nav-add).active::before { transform: scaleX(1); }
 
     /* Tap feedback */
-    .mobile-nav a:active i { transform: scale(0.88); transition-duration: .08s; }
+    .mobile-nav a:not(.mobile-nav-add):active i { transform: scale(0.88); transition-duration: .08s; }
 
-    /* FAB add button */
+    /* FAB wrap */
     .mobile-nav-add-wrap {
       display: flex; justify-content: center; align-items: center;
       position: relative; height: 100%;
@@ -335,32 +334,34 @@
       pointer-events: none;
     }
     @keyframes fabRipple {
-      0%   { transform: translateX(-50%) scale(1);   opacity: .4; box-shadow: 0 0 0 0px rgba(240,123,63,.5); }
-      80%  { transform: translateX(-50%) scale(1);   opacity: 0;  box-shadow: 0 0 0 16px rgba(240,123,63,0); }
-      100% { transform: translateX(-50%) scale(1);   opacity: 0;  box-shadow: 0 0 0 0px rgba(240,123,63,0); }
+      0%   { transform: translateX(-50%); opacity: .35; box-shadow: 0 0 0 0px rgba(240,123,63,.5); }
+      80%  { transform: translateX(-50%); opacity: 0;   box-shadow: 0 0 0 18px rgba(240,123,63,0); }
+      100% { transform: translateX(-50%); opacity: 0;   box-shadow: 0 0 0 0px rgba(240,123,63,0); }
     }
+
+    /* FAB — !important on size/shape beats .mobile-nav a specificity */
     .mobile-nav-add {
-      position: absolute; top: -20px;
-      width: 56px; height: 56px; border-radius: 50%;
-      background: var(--orange); color: #fff !important;
-      display: flex !important; align-items: center !important;
-      justify-content: center !important; padding: 0 !important;
-      font-size: 2.5rem !important; font-weight: 300 !important;
-      line-height: 1 !important; flex-shrink: 0;
+      position: absolute !important; top: -20px !important;
+      width: 56px !important; height: 56px !important;
+      border-radius: 50% !important;
+      background: var(--orange) !important; color: #fff !important;
+      display: flex !important; flex-direction: row !important;
+      align-items: center !important; justify-content: center !important;
+      padding: 0 !important; gap: 0 !important;
       box-shadow: 0 4px 14px rgba(240,123,63,.45), 0 0 0 3px rgba(255,255,255,.7);
-      transition: transform .2s cubic-bezier(.34,1.5,.64,1), box-shadow .2s, background .15s;
+      transition: transform .2s cubic-bezier(.34,1.5,.64,1), box-shadow .2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mobile-nav-add::before {
-      content: '+'; display: block;
-      transform: translateY(-6px);
+    .mobile-nav-add i {
+      color: #fff !important; font-size: 1.25rem !important;
+      line-height: 1 !important; transition: none !important;
     }
     .mobile-nav-add:hover {
-      transform: translateY(-3px) scale(1.06);
+      transform: translateY(-3px) scale(1.06) !important;
       box-shadow: 0 8px 20px rgba(240,123,63,.55), 0 0 0 3px rgba(255,255,255,.7);
     }
     .mobile-nav-add:active {
-      transform: scale(0.93);
+      transform: scale(0.93) !important;
       box-shadow: 0 2px 8px rgba(240,123,63,.35), 0 0 0 3px rgba(255,255,255,.7);
     }
 
@@ -449,7 +450,7 @@
 <!-- Header -->
 <header class="main-header">
   <div class="header-inner">
-    <a href="{% url 'core:home' %}" class="logo">SWD Store</a>
+    <a href="{% url 'core:home' %}" class="logo">BITS Pilani Store</a>
 
     <!-- Desktop search -->
     <form class="desktop-search" action="{% url 'core:home' %}" method="get">
@@ -523,7 +524,7 @@
     <a href="{% url 'core:home' %}"><i class="fas fa-home"></i><span>Home</span></a>
     <a href="{% url 'core:categories' %}"><i class="fas fa-th-large"></i><span>Browse</span></a>
     <div class="mobile-nav-add-wrap">
-      <a href="{% url 'core:add_product' %}" class="mobile-nav-add"></a>
+      <a href="{% url 'core:add_product' %}" class="mobile-nav-add"><i class="fas fa-plus"></i></a>
     </div>
     <a href="{% url 'core:my_listings' %}"><i class="fas fa-list"></i><span>Listings</span></a>
     <a href="{% url 'core:feedback' %}"><i class="fas fa-comment-dots"></i><span>Feedback</span></a>
