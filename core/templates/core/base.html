@@ -117,13 +117,13 @@
       box-shadow: 0 0 0 3px rgba(240,123,63,.08);
     }
     .dsearch-clear {
-      position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: #bbb; cursor: pointer;
-      font-size: .72rem; width: 20px; height: 20px; border-radius: 50%;
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: .85rem; padding: 0;
       align-items: center; justify-content: center;
-      transition: color .15s, background .15s; display: none;
+      transition: color .15s; display: none;
     }
-    .dsearch-clear:hover { color: var(--muted); background: rgba(0,0,0,.06); }
+    .dsearch-clear:hover { color: var(--text); }
 
     /* Desktop nav links */
     .desktop-nav {
@@ -613,6 +613,7 @@
   if (!dSearch) return;
   var inp = dSearch.querySelector('input[name="q"]');
   if (!inp) return;
+  var submitBtn = dSearch.querySelector('button[type="submit"]');
   var cb = document.createElement('button');
   cb.type = 'button'; cb.className = 'dsearch-clear'; cb.title = 'Clear search';
   cb.innerHTML = '<i class="fas fa-times"></i>';
@@ -620,7 +621,7 @@
   function sync() {
     var has = !!inp.value.trim();
     cb.style.display = has ? 'flex' : 'none';
-    inp.style.paddingRight = has ? '58px' : '';
+    submitBtn.style.display = has ? 'none' : '';
     dSearch.classList.toggle('has-query', has);
   }
   cb.addEventListener('click', function(){ inp.value = ''; sync(); dSearch.submit(); });
