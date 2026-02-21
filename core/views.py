@@ -1,5 +1,7 @@
 import json
 import os
+import secrets
+from urllib.parse import urlencode
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -42,11 +44,32 @@ def sign_in(request):
         return render(request, 'core/429.html', status=429)
     if _get_current_user(request):
         return redirect('core:home')
+    state = secrets.token_urlsafe(16)
+    request.session['oauth_state'] = state
+    redirect_uri = request.build_absolute_uri('/auth-receiver')
+    google_auth_url = 'https://accounts.google.com/o/oauth2/auth?' + urlencode({
+        'client_id': settings.GOOGLE_OAUTH_CLIENT_ID or '',
+        'redirect_uri': redirect_uri,
+        'scope': 'openid email profile',
+        'response_type': 'code',
+        'state': state,
+        'access_type': 'online',
+    })
     return render(request, 'core/sign_in.html', {
         'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID or '',
-        'login_uri': request.build_absolute_uri('/auth-receiver'),
+        'login_uri': redirect_uri,
+        'google_auth_url': google_auth_url,
         'debug': settings.DEBUG,
     })
+
+
+def _complete_sign_in(request, user_data):
+    request.session['user_data'] = user_data
+    email = user_data['email']
+    if not Person.objects.filter(email=email).exists():
+        person = Person(email=email, name=user_data.get('name', ''))
+        person.save()
+    return redirect('core:home')
 
 
 @ratelimit(key='ip', rate='20/m', block=False)
@@ -54,26 +77,59 @@ def sign_in(request):
 def auth_receiver(request):
     if getattr(request, 'limited', False):
         return render(request, 'core/429.html', status=429)
-    if request.method != 'POST':
-        return redirect('core:sign_in')
-    try:
-        token = request.POST['credential']
-        user_data = id_token.verify_oauth2_token(
-            token,
-            google_requests.Request(),
-            settings.GOOGLE_OAUTH_CLIENT_ID,
-            clock_skew_in_seconds=10,
-        )
-    except Exception:
-        messages.error(request, 'Sign-in failed. Please try again.')
-        return redirect('core:sign_in')
 
-    request.session['user_data'] = user_data
-    email = user_data['email']
-    if not Person.objects.filter(email=email).exists():
-        person = Person(email=email, name=user_data.get('name', ''))
-        person.save()
-    return redirect('core:home')
+    # ── OAuth2 redirect callback (GET) ────────────────────────────────────────
+    if request.method == 'GET':
+        if request.GET.get('error'):
+            messages.error(request, 'Sign-in was cancelled. Please try again.')
+            return redirect('core:sign_in')
+        code = request.GET.get('code')
+        state = request.GET.get('state')
+        if not code or not state or state != request.session.get('oauth_state'):
+            messages.error(request, 'Sign-in failed. Please try again.')
+            return redirect('core:sign_in')
+        try:
+            token_resp = requests.post(
+                'https://oauth2.googleapis.com/token',
+                data={
+                    'code': code,
+                    'client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
+                    'client_secret': settings.GOOGLE_OAUTH_CLIENT_SECRET,
+                    'redirect_uri': request.build_absolute_uri('/auth-receiver'),
+                    'grant_type': 'authorization_code',
+                },
+                timeout=10,
+            )
+            id_token_str = token_resp.json().get('id_token')
+            if not id_token_str:
+                raise ValueError('No id_token')
+            user_data = id_token.verify_oauth2_token(
+                id_token_str,
+                google_requests.Request(),
+                settings.GOOGLE_OAUTH_CLIENT_ID,
+                clock_skew_in_seconds=10,
+            )
+        except Exception:
+            messages.error(request, 'Sign-in failed. Please try again.')
+            return redirect('core:sign_in')
+        return _complete_sign_in(request, user_data)
+
+    # ── Google One Tap credential (POST) ──────────────────────────────────────
+    if request.method == 'POST':
+        try:
+            token = request.POST['credential']
+            user_data = id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                settings.GOOGLE_OAUTH_CLIENT_ID,
+                clock_skew_in_seconds=10,
+            )
+        except Exception:
+            messages.error(request, 'Sign-in failed. Please try again.')
+            return redirect('core:sign_in')
+        return _complete_sign_in(request, user_data)
+
+    return redirect('core:sign_in')
 
 
 @ratelimit(key='ip', rate='20/m', block=False)
