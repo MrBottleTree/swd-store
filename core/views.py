@@ -644,6 +644,7 @@ def debug_sign_in(request):
     return render(request, 'core/debug_sign_in.html')
 
 @ratelimit(key='ip', rate='60/m', block=False)
+@csrf_exempt
 def react_item(request, item_id):
     person = _get_current_user(request)
     if not person:
