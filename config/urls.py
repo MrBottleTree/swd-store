@@ -1,17 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
 from django.conf.urls.static import static
-from django.views.static import serve as static_serve
-from django.urls import re_path
-from . import settings
 
+# Stub core/urls.py to avoid import error on missing file
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("accounts/", include("allauth.urls")),
-    path("", include("core.urls")),
-    path('social-auth/', include('social_django.urls', namespace='social')),
-    re_path(r'^\.well-known/assetlinks\.json$', static_serve, {
-    'path': 'assetlinks.json',
-    'document_root': settings.STATIC_ROOT / 'wellknown',
-}),
+    path('', include('core.urls')),
 ]
+
+handler404 = 'core.views.page_not_found'
+handler500 = 'core.views.server_error'
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

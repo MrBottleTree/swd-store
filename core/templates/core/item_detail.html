@@ -1,0 +1,459 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}{{ item.name }} — SWD Store{% endblock %}
+
+{% block extra_css %}
+.detail-wrap {
+  display: grid; grid-template-columns: 1fr;
+  gap: 24px; margin-bottom: 40px;
+}
+@media (min-width: 768px) { .detail-wrap { grid-template-columns: 1fr 1fr; gap: 32px; } }
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .8rem; color: var(--muted); margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.breadcrumb a:hover { color: var(--orange); }
+.breadcrumb span.sep { color: #ccc; }
+
+/* Gallery */
+.main-img-wrap {
+  position: relative; padding-bottom: 100%;
+  background: #F0EFEB; border-radius: var(--radius);
+  overflow: hidden; border: 1px solid var(--border);
+}
+.main-img-wrap img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+}
+.main-img-placeholder {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #ccc; font-size: 3rem;
+}
+.sold-badge-detail {
+  position: absolute; top: 14px; left: 14px;
+  background: var(--red); color: #fff;
+  font-weight: 800; font-size: .8rem;
+  padding: 4px 12px; border-radius: 6px; letter-spacing: 1px;
+}
+.thumbnails {
+  display: flex; gap: 8px; overflow-x: auto; padding: 8px 0;
+  scrollbar-width: none;
+}
+.thumbnails::-webkit-scrollbar { display: none; }
+.thumb-btn {
+  flex-shrink: 0; width: 64px; height: 64px;
+  border-radius: 8px; overflow: hidden;
+  border: 2px solid var(--border); background: none; padding: 0; cursor: pointer;
+  transition: border-color .15s;
+}
+.thumb-btn:hover, .thumb-btn.active { border-color: var(--orange); }
+.thumb-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Info panel */
+.item-title {
+  font-size: 1.4rem; font-weight: 800; color: var(--navy);
+  line-height: 1.3; margin-bottom: 8px;
+}
+.item-price-detail {
+  font-size: 1.8rem; font-weight: 800;
+  color: var(--navy); background: var(--orange-light);
+  border-radius: var(--radius-sm); padding: 6px 14px;
+  display: inline-block; margin-bottom: 16px;
+}
+.meta-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.meta-tag {
+  padding: 5px 12px; border-radius: 50px; font-size: .78rem; font-weight: 600;
+  border: 1.5px solid var(--border); color: var(--muted); background: var(--card);
+}
+.meta-tag.cat { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+
+.description-section { margin-bottom: 20px; }
+.section-label {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; color: var(--muted); margin-bottom: 8px;
+}
+.description-text {
+  font-size: .9rem; color: var(--text); line-height: 1.7;
+  white-space: pre-line; background: var(--bg); border-radius: var(--radius-sm);
+  padding: 14px; border: 1px solid var(--border);
+}
+
+.seller-card {
+  background: var(--bg); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 20px;
+}
+.seller-name { font-weight: 700; color: var(--navy); font-size: .95rem; }
+.seller-campus { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+.whatsapp-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 14px;
+  background: #25D366; color: #fff;
+  border-radius: var(--radius-sm); font-weight: 700; font-size: 1rem;
+  transition: background .15s; margin-bottom: 10px;
+}
+.whatsapp-btn:hover { background: #1da851; }
+.sold-msg {
+  width: 100%; text-align: center; padding: 14px;
+  background: var(--bg); color: var(--muted);
+  border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  font-weight: 600; font-size: .9rem; margin-bottom: 10px;
+}
+.owner-actions { display: flex; gap: 8px; }
+.owner-btn {
+  flex: 1; text-align: center; padding: 9px;
+  border-radius: var(--radius-sm); font-size: .85rem; font-weight: 600;
+  transition: background .15s;
+}
+.owner-btn.edit { background: var(--bg); color: var(--navy); border: 1.5px solid var(--border); }
+.owner-btn.edit:hover { background: var(--border); }
+.owner-btn.del { background: #FEF2F2; color: var(--red); border: 1.5px solid #FECACA; }
+.owner-btn.del:hover { background: #FEE2E2; }
+
+/* ── Detail reactions ───────────────────────── */
+.detail-rxn {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px;
+}
+.drxn-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.drxn-badge {
+  background: var(--navy); color: #fff;
+  font-size: .68rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.drxn-groups {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 34px;
+}
+.drxn-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--card);
+  cursor: pointer; font-family: inherit; transition: all .15s;
+  font-size: .82rem; line-height: 1;
+}
+.drxn-pill:hover { border-color: var(--orange); background: var(--orange-light); }
+.drxn-pill.mine { border-color: var(--orange); background: var(--orange-light); }
+.drxn-pill-e { font-size: 1.05rem; }
+.drxn-pill-cnt { font-weight: 700; color: var(--navy); }
+.drxn-quick {
+  display: flex; gap: 4px; margin-bottom: 10px;
+}
+.drxn-qbtn {
+  font-size: 1.22rem; border: 2px solid transparent; background: none;
+  cursor: pointer; width: 40px; height: 40px; border-radius: 50%; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .12s, background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.drxn-qbtn:hover { transform: scale(1.28) translateY(-2px); background: var(--bg); }
+.drxn-qbtn.selected { background: var(--orange-light); border-color: var(--orange); }
+.drxn-list {
+  border-top: 1px solid var(--border); padding-top: 10px;
+  display: flex; flex-direction: column; gap: 7px;
+  max-height: 200px; overflow-y: auto;
+}
+.drxn-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.drxn-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: #fff;
+  font-size: .7rem; font-weight: 700; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.drxn-name { font-size: .85rem; font-weight: 600; color: var(--navy); flex: 1; }
+.drxn-emo { font-size: 1.1rem; }
+.drxn-more { font-size: .78rem; color: var(--muted); text-align: center; padding-top: 6px; }
+
+/* Similar items */
+.similar-title { font-size: 1.1rem; font-weight: 800; color: var(--navy); margin-bottom: 14px; }
+.similar-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+@media (min-width: 480px) { .similar-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+.similar-card {
+  background: var(--card); border-radius: var(--radius);
+  overflow: hidden; border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s;
+}
+.similar-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.similar-img {
+  position: relative; padding-bottom: 100%;
+  background: #F0EFEB; overflow: hidden;
+}
+.similar-img img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; transition: transform .3s;
+}
+.similar-card:hover .similar-img img { transform: scale(1.05); }
+.similar-img-ph {
+  position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  color: #ccc; font-size: 2rem;
+}
+.similar-body { padding: 10px; }
+.similar-name {
+  font-size: .82rem; font-weight: 700; color: var(--navy);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+}
+.similar-price { font-size: .9rem; font-weight: 800; color: var(--navy); }
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="{% url 'core:home' %}">Home</a>
+  <span class="sep">/</span>
+  <a href="{% url 'core:home' %}?c={{ item.category.id }}">{{ item.category.name }}</a>
+  <span class="sep">/</span>
+  <span style="color:var(--text);font-weight:600">{{ item.name }}</span>
+</nav>
+
+<div class="detail-wrap">
+  <!-- Gallery -->
+  <div>
+    {% with images=item.images.all %}
+    <div class="main-img-wrap">
+      {% if images %}
+        <img id="main-image" src="{{ images.0.image.url }}" alt="{{ item.name }}">
+      {% else %}
+        <div class="main-img-placeholder"><i class="fas fa-image"></i></div>
+      {% endif %}
+      {% if item.is_sold %}
+        <div class="sold-badge-detail">SOLD</div>
+      {% endif %}
+    </div>
+    {% if images|length > 1 %}
+    <div class="thumbnails">
+      {% for img in images %}
+      <button class="thumb-btn {% if forloop.first %}active{% endif %}"
+              onclick="switchImage(this, '{{ img.image.url }}')">
+        <img src="{{ img.image.url }}" alt="">
+      </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Info -->
+  <div>
+    <h1 class="item-title">{{ item.name }}</h1>
+    <div class="item-price-detail">
+      {% if item.seller.campus == 'DUB' %}AED{% else %}₹{% endif %}{{ item.price }}
+    </div>
+
+    <div class="meta-tags">
+      <span class="meta-tag cat">
+        {% if item.category.icon_class %}<i class="{{ item.category.icon_class }}"></i> {% endif %}
+        {{ item.category.name }}
+      </span>
+      {% if item.hostel %}<span class="meta-tag"><i class="fas fa-building" style="margin-right:4px;color:var(--orange)"></i>{{ item.hostel.name }}</span>{% endif %}
+      <span class="meta-tag"><i class="far fa-clock" style="margin-right:4px;color:var(--orange)"></i>{{ item.updated_at|timesince }} ago</span>
+    </div>
+
+    <!-- Reactions -->
+    <section class="detail-rxn" id="reactions">
+      <div class="drxn-top">
+        <span class="section-label" style="margin-bottom:0">Reactions</span>
+        <span class="drxn-badge" id="drxn-count">{{ total_rxns }}</span>
+      </div>
+
+      <div class="drxn-groups" id="drxn-groups">
+        {% for emoji, names in emoji_groups.items %}
+        <button class="drxn-pill {% if emoji == my_emoji %}mine{% endif %}"
+                data-emoji="{{ emoji }}" type="button"
+                onclick="detailReact('{{ emoji }}')"
+                title="{{ names|join:', ' }}">
+          <span class="drxn-pill-e">{{ emoji }}</span>
+          <span class="drxn-pill-cnt">{{ names|length }}</span>
+        </button>
+        {% endfor %}
+        {% if not emoji_groups %}
+        <span style="font-size:.82rem;color:var(--muted);align-self:center">No reactions yet — be first!</span>
+        {% endif %}
+      </div>
+
+      <!-- Quick react buttons (always visible, tap to pick/toggle) -->
+      <div class="drxn-quick" id="drxn-quick">
+        <button class="drxn-qbtn {% if my_emoji == '❤️' %}selected{% endif %}" type="button" onclick="detailReact('❤️')">❤️</button>
+        <button class="drxn-qbtn {% if my_emoji == '😂' %}selected{% endif %}" type="button" onclick="detailReact('😂')">😂</button>
+        <button class="drxn-qbtn {% if my_emoji == '🔥' %}selected{% endif %}" type="button" onclick="detailReact('🔥')">🔥</button>
+        <button class="drxn-qbtn {% if my_emoji == '💀' %}selected{% endif %}" type="button" onclick="detailReact('💀')">💀</button>
+        <button class="drxn-qbtn {% if my_emoji == '😭' %}selected{% endif %}" type="button" onclick="detailReact('😭')">😭</button>
+        <button class="drxn-qbtn {% if my_emoji == '🙏' %}selected{% endif %}" type="button" onclick="detailReact('🙏')">🙏</button>
+        <button class="drxn-qbtn {% if my_emoji == '👍' %}selected{% endif %}" type="button" onclick="detailReact('👍')">👍</button>
+      </div>
+
+      {% if all_item_rxns %}
+      <div class="drxn-list" id="drxn-list">
+        {% for rxn in all_item_rxns %}
+        <div class="drxn-row">
+          <div class="drxn-avatar">{{ rxn.person.name|first|upper }}</div>
+          <span class="drxn-name">{{ rxn.person.name }}</span>
+          <span class="drxn-emo">{{ rxn.reaction_type }}</span>
+        </div>
+        {% endfor %}
+        {% if total_rxns > 20 %}
+        <div class="drxn-more">Showing 20 of {{ total_rxns }} reactions</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+
+    {% if item.description %}
+    <div class="description-section">
+      <div class="section-label">Description</div>
+      <div class="description-text">{{ item.description }}</div>
+    </div>
+    {% endif %}
+
+    <div class="section-label">Seller</div>
+    <div class="seller-card">
+      <div class="seller-name">{{ item.seller.name }}</div>
+      {% if item.seller.campus %}
+      <div class="seller-campus">{{ item.seller.get_campus_display }} Campus</div>
+      {% endif %}
+    </div>
+
+    {% if item.whatsapp and not item.is_sold %}
+    <a href="{{ item.whatsapp }}" target="_blank" rel="noopener" class="whatsapp-btn">
+      <i class="fab fa-whatsapp" style="font-size:1.2rem"></i> Contact on WhatsApp
+    </a>
+    {% elif item.is_sold %}
+    <div class="sold-msg"><i class="fas fa-tag" style="margin-right:8px"></i>This item has been sold</div>
+    {% endif %}
+
+    {% if user and user.email == item.seller.email %}
+    <div class="owner-actions">
+      <a href="{% url 'core:edit_item' item.id %}" class="owner-btn edit">
+        <i class="fas fa-pen" style="margin-right:5px"></i>Edit
+      </a>
+      <a href="{% url 'core:delete_item' item.id %}"
+         onclick="return confirm('Delete this item?')"
+         class="owner-btn del">
+        <i class="fas fa-trash" style="margin-right:5px"></i>Delete
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if similar_items %}
+<section>
+  <h2 class="similar-title">Similar items</h2>
+  <div class="similar-grid">
+    {% for s in similar_items %}
+    <a href="{% url 'core:item_detail' s.id %}" class="similar-card">
+      <div class="similar-img">
+        {% with s.images.all|first as s_img %}
+        {% if s_img %}
+          <img src="{{ s_img.image.url }}" alt="{{ s.name }}" loading="lazy">
+        {% else %}
+          <div class="similar-img-ph"><i class="fas fa-image"></i></div>
+        {% endif %}
+        {% endwith %}
+      </div>
+      <div class="similar-body">
+        <div class="similar-name" title="{{ s.name }}">{{ s.name }}</div>
+        <div class="similar-price">
+          {% if s.seller.campus == 'DUB' %}AED{% else %}₹{% endif %}{{ s.price }}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchImage(btn, src) {
+  document.getElementById('main-image').src = src;
+  document.querySelectorAll('.thumb-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+var DETAIL_ITEM_ID = {{ item.id }};
+var MY_EMOJI = {{ my_emoji_json|safe }};
+
+function detailReact(emoji) {
+  fetch('/react/' + DETAIL_ITEM_ID + '/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCsrf(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'emoji=' + encodeURIComponent(emoji),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    MY_EMOJI = data.my_emoji;
+    updateDetailReactions(data);
+  });
+}
+
+function updateDetailReactions(data) {
+  // Count badge
+  document.getElementById('drxn-count').textContent = data.total;
+
+  // Emoji group pills
+  var groups = document.getElementById('drxn-groups');
+  groups.innerHTML = '';
+  var eg = data.emoji_groups || {};
+  var keys = Object.keys(eg);
+  if (keys.length > 0) {
+    keys.forEach(function(emoji) {
+      var names = eg[emoji];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'drxn-pill' + (emoji === MY_EMOJI ? ' mine' : '');
+      btn.dataset.emoji = emoji;
+      btn.title = names.join(', ');
+      btn.onclick = function() { detailReact(emoji); };
+      btn.innerHTML = '<span class="drxn-pill-e">' + emoji + '</span>' +
+                      '<span class="drxn-pill-cnt">' + names.length + '</span>';
+      groups.appendChild(btn);
+    });
+  } else {
+    groups.innerHTML = '<span style="font-size:.82rem;color:var(--muted);align-self:center">No reactions yet — be first!</span>';
+  }
+
+  // Update inline quick-react button highlights
+  document.querySelectorAll('.drxn-qbtn').forEach(function(b) {
+    b.classList.toggle('selected', b.textContent === MY_EMOJI);
+  });
+
+  // Reactors list
+  var oldList = document.getElementById('drxn-list');
+  if (oldList) oldList.remove();
+  if (data.reactors && data.reactors.length > 0) {
+    var list = document.createElement('div');
+    list.id = 'drxn-list';
+    list.className = 'drxn-list';
+    data.reactors.forEach(function(r) {
+      var row = document.createElement('div');
+      row.className = 'drxn-row';
+      row.innerHTML = '<div class="drxn-avatar">' + r.initial + '</div>' +
+                      '<span class="drxn-name">' + r.name + '</span>' +
+                      '<span class="drxn-emo">' + r.emoji + '</span>';
+      list.appendChild(row);
+    });
+    if (data.total > 20) {
+      var note = document.createElement('div');
+      note.className = 'drxn-more';
+      note.textContent = 'Showing 20 of ' + data.total + ' reactions';
+      list.appendChild(note);
+    }
+    document.getElementById('reactions').appendChild(list);
+  }
+}
+</script>
+{% endblock %}

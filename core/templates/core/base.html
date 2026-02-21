@@ -1,0 +1,523 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SWD Store{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --orange:       #F07B3F;
+      --orange-dark:  #D96A2E;
+      --orange-light: #FEF0E7;
+      --navy:         #1E2D4A;
+      --navy-light:   #2D4059;
+      --bg:           #F5F4F1;
+      --card:         #FFFFFF;
+      --border:       #E8E6E1;
+      --text:         #1A1A1A;
+      --muted:        #6B6867;
+      --green:        #27AE60;
+      --red:          #E74C3C;
+      --shadow-sm:    0 1px 4px rgba(0,0,0,.06);
+      --shadow:       0 2px 10px rgba(0,0,0,.08);
+      --shadow-lg:    0 8px 24px rgba(0,0,0,.12);
+      --radius:       14px;
+      --radius-sm:    8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Top progress bar ─────────────────── */
+    #page-bar {
+      position: fixed; top: 0; left: 0; width: 0; height: 3px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-dark));
+      z-index: 9999; transition: width .3s, opacity .3s;
+    }
+
+    /* ── Header ───────────────────────────── */
+    .main-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 16px;
+      display: flex; align-items: center; gap: 12px;
+      height: 58px;
+    }
+
+    .logo {
+      font-size: 1.25rem; font-weight: 800;
+      color: var(--orange); letter-spacing: -0.5px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* Desktop search */
+    .desktop-search {
+      flex: 1; max-width: 420px;
+      display: flex; position: relative;
+    }
+    .desktop-search input {
+      width: 100%; padding: 9px 38px 9px 14px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: .9rem;
+      background: var(--bg); color: var(--text);
+      transition: border-color .2s;
+    }
+    .desktop-search input:focus { outline: none; border-color: var(--orange); }
+    .desktop-search button {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: .9rem;
+    }
+
+    /* Desktop nav links */
+    .desktop-nav {
+      display: flex; align-items: center; gap: 4px; margin-left: auto;
+    }
+    .desktop-nav a {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border-radius: var(--radius-sm);
+      font-size: .875rem; font-weight: 500; color: var(--navy-light);
+      transition: background .15s, color .15s;
+    }
+    .desktop-nav a:hover { background: var(--bg); color: var(--orange); }
+
+    .sell-btn-desktop {
+      background: var(--orange) !important; color: #fff !important;
+      box-shadow: 0 2px 8px rgba(240,123,63,.3);
+    }
+    .sell-btn-desktop:hover { background: var(--orange-dark) !important; }
+
+    /* Profile dropdown */
+    .profile-wrap { position: relative; }
+    .profile-pic {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--navy); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .85rem; overflow: hidden;
+      box-shadow: 0 2px 6px rgba(30,45,74,.25);
+    }
+    .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+
+    .dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-lg);
+      min-width: 180px; display: none; z-index: 200;
+      overflow: hidden;
+    }
+    .dropdown.open { display: block; animation: dropIn .15s ease; }
+    @keyframes dropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+    .dropdown a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px; font-size: .875rem; font-weight: 500;
+      color: var(--text); transition: background .15s;
+    }
+    .dropdown a i { color: var(--orange); width: 16px; text-align: center; }
+    .dropdown a:hover { background: var(--bg); }
+    .dropdown hr { border: none; border-top: 1px solid var(--border); }
+
+    /* Mobile search icon */
+    .mobile-search-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--navy-light); font-size: 1rem;
+      transition: background .15s;
+    }
+    .mobile-search-icon:hover { background: var(--bg); }
+
+    /* Mobile search overlay */
+    #mobile-search-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0;
+      background: var(--card); padding: 14px 16px;
+      z-index: 999; box-shadow: var(--shadow);
+      border-bottom: 1px solid var(--border);
+    }
+    #mobile-search-overlay.open { display: flex; gap: 10px; align-items: center; }
+    #mobile-search-overlay form { flex: 1; display: flex; position: relative; }
+    #mobile-search-overlay input {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--orange);
+      border-radius: var(--radius-sm); font-family: inherit; font-size: .95rem;
+      background: var(--bg); outline: none;
+    }
+    #mobile-search-overlay button[type=submit] {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
+    }
+    #close-mobile-search {
+      border: none; background: none; font-size: 1.1rem;
+      color: var(--muted); cursor: pointer; padding: 4px;
+    }
+
+    /* ── Content ──────────────────────────── */
+    .page-content {
+      max-width: 1200px; margin: 0 auto;
+      padding: 20px 16px 120px;
+    }
+
+    /* ── Toast messages ───────────────────── */
+    .toast-container {
+      position: fixed; top: 20px; right: 20px;
+      z-index: 1000; width: 300px; max-width: calc(100vw - 32px);
+    }
+    .toast {
+      background: var(--card); border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg); margin-bottom: 10px;
+      display: flex; overflow: hidden;
+      animation: slideIn .3s ease;
+    }
+    .toast-bar {
+      width: 4px; flex-shrink: 0;
+    }
+    .toast-bar.success { background: var(--green); }
+    .toast-bar.error   { background: var(--red); }
+    .toast-bar.warning { background: #F39C12; }
+    .toast-bar.info    { background: var(--orange); }
+    .toast-body {
+      flex: 1; padding: 13px 12px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: .875rem; font-weight: 500;
+    }
+    .toast-body i { font-size: 1rem; }
+    .toast-body i.success { color: var(--green); }
+    .toast-body i.error   { color: var(--red); }
+    .toast-body i.warning { color: #F39C12; }
+    .toast-body i.info    { color: var(--orange); }
+    .toast-close {
+      background: none; border: none; padding: 12px 12px 12px 0;
+      color: var(--muted); cursor: pointer; font-size: .9rem;
+    }
+    @keyframes slideIn { from { transform: translateX(110%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity:1; } to { transform: translateX(110%); opacity:0; } }
+    .toast.hiding { animation: slideOut .25s ease forwards; }
+
+    /* ── Mobile bottom nav ────────────────── */
+    .mobile-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card); border-top: 1px solid var(--border);
+      z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+    }
+    .mobile-nav-inner {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      height: 60px;
+    }
+    .mobile-nav a {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 3px; font-size: .65rem; font-weight: 600;
+      color: var(--muted); height: 100%;
+      transition: color .15s;
+    }
+    .mobile-nav a i { font-size: 1.1rem; }
+    .mobile-nav a.active, .mobile-nav a:hover { color: var(--orange); }
+
+    .mobile-nav-add-wrap {
+      display: flex; justify-content: center; align-items: center;
+      position: relative; height: 100%;
+    }
+    .mobile-nav-add {
+      position: absolute; top: -20px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--orange); color: #fff !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      font-size: 2.5rem !important;
+      font-weight: 300 !important;
+      line-height: 1 !important;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(240,123,63,.4);
+      transition: transform .2s, box-shadow .2s;
+      /* Optical adjustment: move character up slightly */
+      text-indent: 0;
+    }
+    .mobile-nav-add::before {
+      content: '+';
+      display: block;
+      transform: translateY(-6px);
+    }
+    .mobile-nav-add:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(240,123,63,.5); }
+
+    /* ── Scrollbar ────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+    /* ── Responsive ───────────────────────── */
+    @media (max-width: 768px) {
+      .desktop-search, .desktop-nav { display: none; }
+      .mobile-search-icon { display: flex; }
+      .mobile-nav { display: block; }
+    }
+    @media (min-width: 769px) {
+      .page-content { padding-bottom: 40px; }
+    }
+
+    /* ── Quick React strip (global) ──────────────── */
+    #qr-strip {
+      position: fixed; z-index: 9999;
+      display: flex; gap: 2px; align-items: center;
+      padding: 6px 10px;
+      background: var(--card); border-radius: 50px;
+      box-shadow: 0 4px 28px rgba(0,0,0,.16), 0 0 0 1px var(--border);
+      transition: opacity .15s, transform .15s;
+    }
+    #qr-strip.qr-hidden { opacity: 0; pointer-events: none; transform: translateY(6px) scale(0.92); }
+    .qr-btn {
+      font-size: 1.3rem; border: none; background: none; cursor: pointer;
+      width: 40px; height: 40px; border-radius: 50%; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .12s, background .12s;
+    }
+    .qr-btn:hover { transform: scale(1.35) translateY(-3px); }
+    .qr-btn.selected { background: var(--orange-light); }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<div id="page-bar"></div>
+
+<!-- Mobile search overlay -->
+<div id="mobile-search-overlay">
+  <form action="{% url 'core:home' %}" method="get">
+    {% if request.GET.campus %}<input type="hidden" name="campus" value="{{ request.GET.campus }}">{% endif %}
+    {% if request.GET.c %}<input type="hidden" name="c" value="{{ request.GET.c }}">{% endif %}
+    {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search items…" id="mobile-search-input" autocomplete="off">
+    <button type="submit"><i class="fas fa-search"></i></button>
+  </form>
+  <button id="close-mobile-search"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- Header -->
+<header class="main-header">
+  <div class="header-inner">
+    <a href="{% url 'core:home' %}" class="logo">SWD Store</a>
+
+    <!-- Desktop search -->
+    <form class="desktop-search" action="{% url 'core:home' %}" method="get">
+      {% if request.GET.campus %}<input type="hidden" name="campus" value="{{ request.GET.campus }}">{% endif %}
+      {% if request.GET.c %}<input type="hidden" name="c" value="{{ request.GET.c }}">{% endif %}
+      {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search items…" autocomplete="off">
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+
+    <!-- Mobile search icon -->
+    <div class="mobile-search-icon" id="open-mobile-search" style="margin-left:auto">
+      <i class="fas fa-search"></i>
+    </div>
+
+    <!-- Desktop nav -->
+    <nav class="desktop-nav">
+      <a href="{% url 'core:home' %}"><i class="fas fa-home"></i> Home</a>
+      <a href="{% url 'core:categories' %}"><i class="fas fa-th-large"></i> Categories</a>
+      <a href="{% url 'core:add_product' %}" class="sell-btn-desktop"><i class="fas fa-plus"></i> Sell</a>
+    </nav>
+
+    <!-- Profile -->
+    {% if user %}
+    <div class="profile-wrap">
+      <div class="profile-pic" id="profile-trigger">
+        {% if request.session.user_data.picture %}
+          <img src="{{ request.session.user_data.picture }}" alt="{{ user.name }}">
+        {% else %}
+          <i class="fas fa-user"></i>
+        {% endif %}
+      </div>
+      <div class="dropdown" id="profile-dropdown">
+        <a href="{% url 'core:my_listings' %}"><i class="fas fa-list"></i> My Listings</a>
+        <a href="{% url 'core:feedback' %}"><i class="fas fa-comment-dots"></i> Feedback</a>
+        <a href="{% url 'core:about' %}"><i class="fas fa-info-circle"></i> About</a>
+        <hr>
+        <a href="{% url 'core:sign_out' %}"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</header>
+
+<!-- Toast messages -->
+{% if messages %}
+<div class="toast-container">
+  {% for message in messages %}
+  {% with tags=message.tags|default:'info' %}
+  <div class="toast" data-autohide="5000">
+    <div class="toast-bar {{ tags }}"></div>
+    <div class="toast-body">
+      <i class="fas {% if tags == 'success' %}fa-check-circle success{% elif tags == 'error' %}fa-exclamation-circle error{% elif tags == 'warning' %}fa-exclamation-triangle warning{% else %}fa-info-circle info{% endif %}"></i>
+      <span>{{ message }}</span>
+    </div>
+    <button class="toast-close"><i class="fas fa-times"></i></button>
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Page content -->
+<div class="page-content">
+  {% block content %}{% endblock %}
+</div>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <a href="{% url 'core:home' %}"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="{% url 'core:categories' %}"><i class="fas fa-th-large"></i><span>Browse</span></a>
+    <div class="mobile-nav-add-wrap">
+      <a href="{% url 'core:add_product' %}" class="mobile-nav-add"></a>
+    </div>
+    <a href="{% url 'core:my_listings' %}"><i class="fas fa-list"></i><span>Listings</span></a>
+    <a href="{% url 'core:feedback' %}"><i class="fas fa-comment-dots"></i><span>Feedback</span></a>
+  </div>
+</nav>
+
+<script>
+// Page bar
+(function(){
+  var bar = document.getElementById('page-bar');
+  var t;
+  function start(){ bar.style.width='0'; bar.style.opacity='1'; clearTimeout(t); bar.style.width='70%'; }
+  function done(){ bar.style.width='100%'; t=setTimeout(function(){ bar.style.opacity='0'; bar.style.width='0'; },300); }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href]');
+    if(a && !a.target && !a.href.startsWith('mailto:') && !a.href.startsWith('#') && new URL(a.href,location.href).origin===location.origin){
+      start();
+    }
+  });
+  document.querySelectorAll('form').forEach(function(f){ f.addEventListener('submit',start); });
+  window.addEventListener('pageshow', done);
+})();
+
+// Profile dropdown
+(function(){
+  var trigger=document.getElementById('profile-trigger');
+  var dropdown=document.getElementById('profile-dropdown');
+  if(!trigger) return;
+  trigger.addEventListener('click',function(e){
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+  document.addEventListener('click',function(){ dropdown.classList.remove('open'); });
+})();
+
+// Mobile search overlay
+(function(){
+  var open=document.getElementById('open-mobile-search');
+  var overlay=document.getElementById('mobile-search-overlay');
+  var close=document.getElementById('close-mobile-search');
+  var input=document.getElementById('mobile-search-input');
+  if(!open) return;
+  open.addEventListener('click',function(){ overlay.classList.add('open'); input.focus(); });
+  close.addEventListener('click',function(){ overlay.classList.remove('open'); });
+})();
+
+// Toasts
+(function(){
+  document.querySelectorAll('.toast').forEach(function(t){
+    var delay=parseInt(t.dataset.autohide)||5000;
+    var btn=t.querySelector('.toast-close');
+    function hide(){ t.classList.add('hiding'); setTimeout(function(){ t.remove(); },260); }
+    if(btn) btn.addEventListener('click',hide);
+    setTimeout(hide,delay);
+  });
+})();
+</script>
+
+<script>
+// ── Shared utilities ──────────────────────────────────────────────────────────
+function getCsrf() {
+  var c = document.cookie.split(';').find(function(s) { return s.trim().startsWith('csrftoken='); });
+  return c ? c.trim().split('=')[1] : '';
+}
+
+// ── Quick React strip (7 WhatsApp-style emojis) ───────────────────────────────
+var QR = {
+  EMOJIS: ['❤️', '😂', '🔥', '💀', '😭', '🙏', '👍'],
+  _el: null,
+  _cb: null,
+
+  build: function() {
+    if (QR._el) return;
+    var strip = document.createElement('div');
+    strip.id = 'qr-strip';
+    strip.className = 'qr-hidden';
+    QR.EMOJIS.forEach(function(e) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'qr-btn';
+      btn.textContent = e;
+      btn.onclick = function() { QR.close(); if (QR._cb) QR._cb(e); };
+      strip.appendChild(btn);
+    });
+    document.body.appendChild(strip);
+    QR._el = strip;
+    document.addEventListener('click', function(ev) {
+      if (QR._el && !QR._el.classList.contains('qr-hidden') &&
+          !QR._el.contains(ev.target) && !ev.target.closest('.rxn-add')) {
+        QR.close();
+      }
+    });
+    document.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') QR.close();
+    });
+  },
+
+  open: function(anchor, currentMine, callback) {
+    QR.build();
+    QR._cb = callback;
+    QR._el.querySelectorAll('.qr-btn').forEach(function(b) {
+      b.classList.toggle('selected', b.textContent === currentMine);
+    });
+    QR._el.classList.remove('qr-hidden');
+    // Position the strip above or below the anchor
+    var rect = anchor.getBoundingClientRect();
+    var sw = QR.EMOJIS.length * 44 + 20;
+    var left = Math.max(8, Math.min(rect.right - sw, window.innerWidth - sw - 8));
+    if (rect.top > 80) {
+      QR._el.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+      QR._el.style.top = 'auto';
+    } else {
+      QR._el.style.top = (rect.bottom + 8) + 'px';
+      QR._el.style.bottom = 'auto';
+    }
+    QR._el.style.left = left + 'px';
+  },
+
+  close: function() {
+    if (QR._el) QR._el.classList.add('qr-hidden');
+  }
+};
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

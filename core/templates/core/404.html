@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found — SWD Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      min-height: 100vh; background: #F5F4F1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; -webkit-font-smoothing: antialiased;
+      text-align: center;
+    }
+    a { text-decoration: none; }
+    .num {
+      font-size: 7rem; font-weight: 800;
+      color: #E8E6E1; line-height: 1;
+      margin-bottom: 16px; letter-spacing: -4px;
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; color: #1E2D4A; margin-bottom: 10px; }
+    p { font-size: .9rem; color: #6B6867; max-width: 320px; line-height: 1.6; margin-bottom: 28px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #F07B3F; color: #fff;
+      padding: 11px 28px; border-radius: 10px;
+      font-weight: 700; font-size: .9rem;
+      transition: background .15s;
+    }
+    .btn:hover { background: #D96A2E; }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="num">404</div>
+    <h1>Page not found</h1>
+    <p>The page you're looking for doesn't exist or has been moved.</p>
+    <a href="/" class="btn">Go home</a>
+  </div>
+</body>
+</html>

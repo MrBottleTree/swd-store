@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — SWD Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      background: #F5F4F1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.10);
+      padding: 44px 40px;
+      width: 100%; max-width: 400px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 2rem; font-weight: 800;
+      color: #F07B3F; letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+    .tagline {
+      font-size: .82rem; font-weight: 600;
+      color: #6B6867; letter-spacing: .5px;
+      text-transform: uppercase; margin-bottom: 28px;
+    }
+
+    .divider { border: none; border-top: 1px solid #E8E6E1; margin: 28px 0; }
+
+    .subtitle {
+      font-size: .875rem; color: #6B6867; line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .google-wrap {
+      display: flex; justify-content: center; margin-bottom: 12px;
+    }
+
+    .terms-note {
+      font-size: .75rem; color: #aaa; margin-top: 20px;
+    }
+    .terms-note a { color: #F07B3F; }
+    .terms-note a:hover { text-decoration: underline; }
+
+    .debug-wrap {
+      margin-top: 24px; padding-top: 20px;
+      border-top: 1px solid #E8E6E1;
+    }
+    .debug-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 10px 16px;
+      border: 1.5px solid #FCD34D;
+      background: #FFFBEB; border-radius: 10px;
+      color: #92400E; font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .debug-btn:hover { background: #FEF3C7; }
+    .debug-badge {
+      background: #FDE68A; color: #78350F;
+      font-size: .7rem; font-weight: 800;
+      padding: 2px 6px; border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">SWD Store</div>
+    <div class="tagline">BITS Pilani Marketplace</div>
+
+    <p class="subtitle">
+      Buy and sell second-hand items within your campus community.
+      Sign in with your BITS Google account to get started.
+    </p>
+
+    <div class="google-wrap">
+      <div id="g_id_onload"
+           data-client_id="{{ google_client_id }}"
+           data-login_uri="/auth-receiver"
+           data-auto_prompt="true">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="sign_in_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
+    </div>
+
+    <p class="terms-note">
+      By signing in you agree to our <a href="/terms">Terms of Service</a>.
+    </p>
+
+    {% if debug %}
+    <div class="debug-wrap">
+      <a href="/debug-sign-in" class="debug-btn">
+        <span class="debug-badge">DEBUG</span>
+        Bypass Google sign-in
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var onload = document.getElementById('g_id_onload');
+      if (onload) onload.dataset.clientId = "{{ google_client_id|escapejs }}";
+    });
+  </script>
+</body>
+</html>

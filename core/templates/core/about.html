@@ -1,0 +1,89 @@
+{% extends "core/base.html" %}
+{% block title %}About — SWD Store{% endblock %}
+
+{% block extra_css %}
+.content-wrap { max-width: 640px; margin: 0 auto; }
+.page-title { font-size: 1.4rem; font-weight: 800; color: var(--navy); margin-bottom: 20px; }
+
+.content-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  padding: 28px;
+}
+.content-card section { margin-bottom: 24px; }
+.content-card section:last-of-type { margin-bottom: 0; }
+.content-card h2 {
+  font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px;
+}
+.content-card p, .content-card li {
+  font-size: .9rem; color: var(--muted); line-height: 1.7;
+}
+.content-card ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.content-card li { display: flex; align-items: center; gap: 10px; }
+.content-card li::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--orange); flex-shrink: 0;
+}
+
+.content-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--orange); color: #fff;
+  padding: 10px 22px; border-radius: var(--radius-sm);
+  font-weight: 700; font-size: .875rem; transition: background .15s;
+}
+.btn-primary:hover { background: var(--orange-dark); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg); color: var(--navy-light);
+  padding: 10px 22px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  font-weight: 600; font-size: .875rem; transition: background .15s;
+}
+.btn-secondary:hover { background: var(--border); }
+{% endblock %}
+
+{% block content %}
+<div class="content-wrap">
+  <h1 class="page-title">About SWD Store</h1>
+
+  <div class="content-card">
+    <section>
+      <h2>What is SWD Store?</h2>
+      <p>SWD Store is a student-run marketplace for BITS Pilani campuses — Goa, Hyderabad, Pilani, and Dubai.
+         It lets students buy and sell second-hand items easily within their campus community,
+         replacing the older pawnshop platform with a cleaner, faster experience.</p>
+    </section>
+
+    <section>
+      <h2>Built by</h2>
+      <p>SWD Store was designed and built by <strong style="color:var(--navy)">Vishrut</strong>,
+         a student at BITS Pilani Goa Campus.
+         The goal was to create a permanent, well-maintained platform that the student community can rely on.</p>
+    </section>
+
+    <section>
+      <h2>How it works</h2>
+      <ul>
+        <li>Sign in with your BITS Google account</li>
+        <li>Browse listings filtered to your campus by default</li>
+        <li>List items for sale with photos and a price</li>
+        <li>Connect with buyers directly over WhatsApp</li>
+      </ul>
+    </section>
+
+    <hr class="content-divider">
+
+    <div class="btn-row">
+      <a href="{% url 'core:feedback' %}" class="btn-primary">
+        <i class="fas fa-comment-dots"></i> Send Feedback
+      </a>
+      <a href="{% url 'core:home' %}" class="btn-secondary">
+        <i class="fas fa-home"></i> Browse Listings
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
