@@ -110,8 +110,9 @@ CACHES = {
 
 SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003', 'django_ratelimit.W001']
 
-# Behind nginx reverse proxy — real client IP is in X-Forwarded-For
+# Behind nginx reverse proxy
 RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
 LOGIN_URL = '/sign-in'
