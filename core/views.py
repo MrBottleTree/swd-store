@@ -44,6 +44,7 @@ def sign_in(request):
         return redirect('core:home')
     return render(request, 'core/sign_in.html', {
         'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID or '',
+        'login_uri': request.build_absolute_uri('/auth-receiver'),
         'debug': settings.DEBUG,
     })
 
