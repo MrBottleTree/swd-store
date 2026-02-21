@@ -15,7 +15,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '140.238.250.250',
-    'swdstore.bits-pilani.ac.in'
+    'swdstore.bits-pilani.ac.in',
+    '192.168.10.130'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
