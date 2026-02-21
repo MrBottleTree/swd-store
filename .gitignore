@@ -2,3 +2,6 @@
 **/__pycache__/
 **/migrations/
 .env
+pawnshop-archive/
+pawnshop-archive.zip
+project_backup.tar
