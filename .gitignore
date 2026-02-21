@@ -17,3 +17,4 @@ media/
 **.ppk
 data.json
 db.sqlite3
+clean_data.json
