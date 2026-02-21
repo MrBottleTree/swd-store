@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Sign In — SWD Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      min-height: 100vh; background: #F5F4F1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      padding: 36px 32px; width: 100%; max-width: 360px;
+    }
+    .header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .debug-badge {
+      background: #FDE68A; color: #78350F;
+      font-size: .7rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 4px; letter-spacing: .5px;
+    }
+    h1 { font-size: 1.1rem; font-weight: 700; color: #1E2D4A; }
+    .subtitle { font-size: .83rem; color: #6B6867; margin-bottom: 24px; line-height: 1.5; }
+
+    .field { margin-bottom: 16px; }
+    label {
+      display: block; font-size: .82rem; font-weight: 600;
+      color: #1E2D4A; margin-bottom: 6px;
+    }
+    label .opt { font-weight: 400; color: #aaa; }
+    input {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid #E8E6E1; border-radius: 8px;
+      font-family: inherit; font-size: .9rem; color: #1A1A1A;
+      background: #F5F4F1; transition: border-color .2s;
+    }
+    input:focus { outline: none; border-color: #F07B3F; background: #fff; }
+
+    .submit-btn {
+      width: 100%; padding: 11px;
+      background: #F07B3F; color: #fff;
+      border: none; border-radius: 8px;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .15s; margin-top: 4px;
+    }
+    .submit-btn:hover { background: #D96A2E; }
+
+    .note {
+      text-align: center; font-size: .75rem; color: #bbb; margin-top: 20px;
+    }
+    code { background: #F5F4F1; padding: 1px 5px; border-radius: 4px; font-size: .8em; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <span class="debug-badge">DEBUG</span>
+      <h1>Bypass Sign In</h1>
+    </div>
+    <p class="subtitle">Enter any email to sign in without Google OAuth.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autofocus
+               placeholder="f20230001@goa.bits-pilani.ac.in">
+      </div>
+      <div class="field">
+        <label for="name">Name <span class="opt">(optional)</span></label>
+        <input type="text" id="name" name="name" placeholder="Your name">
+      </div>
+      <button type="submit" class="submit-btn">Sign in</button>
+    </form>
+
+    <p class="note">Only available when <code>DEBUG=True</code>.</p>
+  </div>
+</body>
+</html>

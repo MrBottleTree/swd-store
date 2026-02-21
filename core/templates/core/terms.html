@@ -1,0 +1,68 @@
+{% extends "core/base.html" %}
+{% block title %}Terms of Service — SWD Store{% endblock %}
+
+{% block extra_css %}
+.content-wrap { max-width: 640px; margin: 0 auto; }
+.page-title { font-size: 1.4rem; font-weight: 800; color: var(--navy); margin-bottom: 20px; }
+
+.content-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  padding: 28px;
+}
+.content-card section { margin-bottom: 22px; }
+.content-card section:last-of-type { margin-bottom: 0; }
+.content-card h2 {
+  font-size: .95rem; font-weight: 700; color: var(--navy); margin-bottom: 6px;
+}
+.content-card p {
+  font-size: .875rem; color: var(--muted); line-height: 1.75;
+}
+.last-updated {
+  font-size: .78rem; color: #bbb; margin-top: 24px;
+  padding-top: 18px; border-top: 1px solid var(--border);
+}
+{% endblock %}
+
+{% block content %}
+<div class="content-wrap">
+  <h1 class="page-title">Terms of Service</h1>
+
+  <div class="content-card">
+    <section>
+      <h2>1. Usage</h2>
+      <p>SWD Store is exclusively for students, faculty, and staff of BITS Pilani campuses.
+         By using this platform you confirm you are a member of the BITS Pilani community.</p>
+    </section>
+
+    <section>
+      <h2>2. Listings</h2>
+      <p>You are responsible for the accuracy of your listings. Prohibited items include anything
+         illegal, stolen, or violating BITS Pilani policies. Misleading listings will result
+         in removal and potential account suspension.</p>
+    </section>
+
+    <section>
+      <h2>3. Transactions</h2>
+      <p>SWD Store is a listing platform only. We do not facilitate payments or guarantee
+         the condition of items. All transactions are conducted directly between buyers and sellers.
+         Exercise appropriate caution.</p>
+    </section>
+
+    <section>
+      <h2>4. Privacy</h2>
+      <p>We collect your Google account name and email address for authentication purposes only.
+         Your phone number is stored to generate WhatsApp contact links. We do not sell or share
+         your data with third parties.</p>
+    </section>
+
+    <section>
+      <h2>5. Changes</h2>
+      <p>These terms may be updated at any time. Continued use of the platform constitutes
+         acceptance of the updated terms.</p>
+    </section>
+
+    <p class="last-updated">Last updated: February 2026</p>
+  </div>
+</div>
+{% endblock %}

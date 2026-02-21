@@ -1,0 +1,372 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}{% if item %}Edit Listing{% else %}Sell an Item{% endif %} — SWD Store{% endblock %}
+
+{% block extra_css %}
+.form-wrap { max-width: 580px; margin: 0 auto; }
+
+.page-title { font-size: 1.4rem; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+.page-sub { font-size: .875rem; color: var(--muted); margin-bottom: 22px; }
+
+/* ── Photo section ─────────────────────────── */
+.photos-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  padding: 20px; margin-bottom: 14px;
+}
+.photos-label {
+  font-size: .8rem; font-weight: 700; color: var(--navy);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.photos-label span { font-weight: 400; color: var(--muted); text-transform: none; letter-spacing: 0; }
+
+.photo-slots {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px;
+}
+@media (max-width: 420px) { .photo-slots { gap: 5px; } }
+
+.photo-slot {
+  position: relative; padding-bottom: 100%;
+  border-radius: 10px; border: 2px dashed var(--border);
+  background: var(--bg); overflow: hidden; cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.photo-slot.has-image { border-style: solid; border-color: var(--border); cursor: default; }
+.photo-slot img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.photo-slot-ph {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  color: #ccc; font-size: .65rem; font-weight: 600;
+}
+.photo-slot-ph i { font-size: 1.2rem; }
+.photo-slot-del {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(0,0,0,.6); color: #fff;
+  border: none; cursor: pointer; font-size: .7rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.photo-slot-del:hover { background: var(--red); }
+.photo-slot.first-empty { border-color: var(--orange); background: var(--orange-light); }
+.photo-slot.first-empty .photo-slot-ph { color: var(--orange); }
+
+.upload-hint {
+  text-align: center; font-size: .85rem; color: var(--muted);
+  padding: 12px; border-radius: var(--radius-sm);
+  background: var(--bg); border: 1.5px dashed var(--border);
+  cursor: pointer; transition: border-color .2s, background .2s;
+  display: block; /* ensure full-width as a label */
+}
+.upload-hint:hover { border-color: var(--orange); background: var(--orange-light); color: var(--orange); }
+.upload-hint i { margin-right: 6px; }
+@media (max-width: 480px) { .upload-hint { padding: 14px; } }
+
+/* ── Details card ───────────────────────────── */
+.details-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  padding: 20px; margin-bottom: 14px;
+}
+.card-section-label {
+  font-size: .8rem; font-weight: 700; color: var(--navy);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 16px;
+}
+
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field > label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .82rem; font-weight: 700; color: var(--navy); margin-bottom: 7px;
+}
+.field > label .opt { font-weight: 400; color: var(--muted); }
+.req { color: var(--red); }
+
+.field input[type="text"],
+.field input[type="number"],
+.field select,
+.field textarea {
+  width: 100%; padding: 11px 13px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: inherit; font-size: .9rem; color: var(--text);
+  background: var(--bg); transition: border-color .2s, background .2s, box-shadow .2s;
+  -webkit-appearance: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--orange); background: var(--card);
+  box-shadow: 0 0 0 3px rgba(240,123,63,.12);
+}
+/* When price field is focused, update the prefix border to match */
+.price-wrap:focus-within .price-prefix {
+  border-right-color: var(--orange);
+  color: var(--orange);
+}
+.field textarea { resize: vertical; min-height: 80px; }
+.field select { cursor: pointer; }
+
+.price-wrap { position: relative; }
+.price-wrap input { padding-left: 46px; }
+.price-prefix {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px;
+  font-weight: 700; color: var(--navy); font-size: .95rem;
+  pointer-events: none;
+  border-right: 1.5px solid var(--border);
+  background: var(--bg); border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 400px) { .two-col { grid-template-columns: 1fr; } }
+
+.field-error { color: var(--red); font-size: .78rem; margin-top: 5px; }
+.field-help { color: var(--muted); font-size: .78rem; margin-top: 5px; }
+
+/* ── Submit row ─────────────────────────────── */
+.submit-row { display: flex; gap: 10px; }
+.btn-publish {
+  flex: 1; padding: 14px;
+  background: var(--orange); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-family: inherit;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  transition: background .15s; letter-spacing: .2px;
+}
+.btn-publish:hover { background: var(--orange-dark); }
+.btn-cancel {
+  padding: 14px 24px; border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--navy-light);
+  border: 1.5px solid var(--border); font-size: .9rem;
+  font-weight: 600; transition: background .15s;
+}
+.btn-cancel:hover { background: var(--border); }
+{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+  <h1 class="page-title">{% if item %}Edit Listing{% else %}Sell an Item{% endif %}</h1>
+  <p class="page-sub">{% if item %}Update the details for your listing.{% else %}Fill in the details and connect with buyers on campus.{% endif %}</p>
+
+  <form method="post" enctype="multipart/form-data" id="listing-form">
+    {% csrf_token %}
+
+    <!-- Photos -->
+    <div class="photos-card">
+      <div class="photos-label">
+        Photos <span id="photo-count-label">0 / 5 added</span>
+      </div>
+
+      <div class="photo-slots" id="photo-slots">
+        <!-- Slots rendered by JS -->
+      </div>
+
+      <label for="image-input" class="upload-hint" id="upload-hint">
+        <i class="fas fa-camera"></i> Tap to add photos (JPEG, PNG, up to 5)
+      </label>
+      <input type="file" id="image-input" name="images" accept="image/*" multiple style="display:none"
+             onchange="handleImageSelect(this)">
+
+      <!-- Hidden fields for existing images (edit mode) -->
+      <input type="hidden" name="existing_image_ids" id="existing-image-ids" value="">
+    </div>
+
+    <!-- Details -->
+    <div class="details-card">
+      <div class="card-section-label">Item Details</div>
+
+      {% for field in form %}
+        {% if field.html_name == 'name' %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            Product Name <span class="req">*</span>
+          </label>
+          {{ field }}
+          {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        {% elif field.html_name == 'price' %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            Price <span class="req">*</span>
+          </label>
+          <div class="price-wrap">
+            <span class="price-prefix">₹</span>
+            {{ field }}
+          </div>
+          {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        {% elif field.html_name == 'description' %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            Description <span class="opt">(optional)</span>
+          </label>
+          {{ field }}
+          {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        {% elif field.html_name == 'category' %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            Category <span class="req">*</span>
+          </label>
+          {{ field }}
+          {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        {% elif field.html_name == 'hostel' %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            Hostel {% if not field.field.required %}<span class="opt">(optional)</span>{% else %}<span class="req">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        {% elif field.html_name == 'phone' %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            WhatsApp Number {% if not field.field.required %}<span class="opt">(optional)</span>{% else %}<span class="req">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+          <p class="field-help">Buyers will contact you on WhatsApp. Include country code (e.g. +91 for India).</p>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn-publish">
+        <i class="fas {% if item %}fa-save{% else %}fa-paper-plane{% endif %}" style="margin-right:6px"></i>
+        {% if item %}Save Changes{% else %}Publish Listing{% endif %}
+      </button>
+      <a href="{% url 'core:my_listings' %}" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── State ───────────────────────────────────────────────────────────────────
+var newFiles = [];          // Files picked by user (never spliced, uses removedIdx)
+var removedIdx = new Set(); // Indices into newFiles that user removed
+var existingIds = [];       // IDs of existing images (edit mode)
+
+// ── Initialise existing images (edit mode) ──────────────────────────────────
+{% if item %}
+var existingImgData = [
+  {% for img in item.images.all|dictsort:"display_order" %}
+  { id: {{ img.id }}, url: "{{ img.image.url }}" }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+];
+existingIds = existingImgData.map(function(x) { return x.id; });
+existingImgData.forEach(function(img, idx) {
+  renderExistingSlot(img.url, img.id, idx);
+});
+syncState();
+{% endif %}
+
+// ── Slot rendering ──────────────────────────────────────────────────────────
+function renderExistingSlot(url, imgId, position) {
+  var slots = document.getElementById('photo-slots');
+  var slot = document.createElement('div');
+  slot.className = 'photo-slot has-image';
+  slot.dataset.existingId = imgId;
+  var img = document.createElement('img');
+  img.src = url;
+  var del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'photo-slot-del';
+  del.innerHTML = '<i class="fas fa-times"></i>';
+  del.onclick = function() {
+    existingIds = existingIds.filter(function(id) { return id !== imgId; });
+    slot.remove();
+    syncState();
+  };
+  slot.appendChild(img);
+  slot.appendChild(del);
+  slots.appendChild(slot);
+}
+
+function renderNewSlot(src, fileIdx) {
+  var slots = document.getElementById('photo-slots');
+  var slot = document.createElement('div');
+  slot.className = 'photo-slot has-image';
+  slot.dataset.newIdx = fileIdx;
+  var img = document.createElement('img');
+  img.src = src;
+  var del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'photo-slot-del';
+  del.innerHTML = '<i class="fas fa-times"></i>';
+  del.onclick = function() {
+    removedIdx.add(fileIdx);
+    slot.remove();
+    syncState();
+  };
+  slot.appendChild(img);
+  slot.appendChild(del);
+  slots.appendChild(slot);
+}
+
+// ── File selection ──────────────────────────────────────────────────────────
+function handleImageSelect(input) {
+  var files = Array.from(input.files);
+  input.value = '';  // clear BEFORE syncState
+  files.forEach(function(file) {
+    var activeCount = existingIds.length + newFiles.filter(function(_, i) {
+      return !removedIdx.has(i);
+    }).length;
+    if (activeCount >= 5) return;
+    var idx = newFiles.length;
+    newFiles.push(file);
+    var reader = new FileReader();
+    reader.onload = function(e) { renderNewSlot(e.target.result, idx); };
+    reader.readAsDataURL(file);
+  });
+  syncState();
+}
+
+// ── Sync hidden fields + file input ────────────────────────────────────────
+function syncState() {
+  // Update existing_image_ids
+  document.getElementById('existing-image-ids').value = existingIds.join(',');
+
+  // Rebuild file input with only non-removed new files
+  var dt = new DataTransfer();
+  newFiles.forEach(function(f, i) {
+    if (!removedIdx.has(i)) dt.items.add(f);
+  });
+  document.getElementById('image-input').files = dt.files;
+
+  // Update counter label
+  var total = existingIds.length + newFiles.filter(function(_, i) {
+    return !removedIdx.has(i);
+  }).length;
+  document.getElementById('photo-count-label').textContent = total + ' / 5 added';
+
+  // Highlight the next empty slot for click-to-add
+  document.querySelectorAll('.photo-slot.first-empty').forEach(function(s) {
+    s.classList.remove('first-empty');
+  });
+  updateUploadHint(total);
+}
+
+function updateUploadHint(total) {
+  var hint = document.getElementById('upload-hint');
+  if (total >= 5) {
+    hint.style.display = 'none';
+  } else {
+    hint.style.display = '';
+    hint.querySelector('i').className = total === 0 ? 'fas fa-camera' : 'fas fa-plus';
+  }
+}
+
+// Init
+syncState();
+</script>
+{% endblock %}

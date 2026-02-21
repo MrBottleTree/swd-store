@@ -1,0 +1,648 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}SWD Store — {{ selected_campus }} Marketplace{% endblock %}
+
+{% block extra_css %}
+/* ── Campus tabs ────────────────────────────── */
+.campus-tabs {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none; margin-bottom: 14px;
+}
+.campus-tabs::-webkit-scrollbar { display: none; }
+.campus-tab {
+  flex-shrink: 0; padding: 7px 18px; border-radius: 50px;
+  font-size: .83rem; font-weight: 700;
+  border: 1.5px solid var(--border); background: var(--card);
+  color: var(--muted); cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.campus-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.campus-tab:not(.active):hover { border-color: var(--orange); color: var(--orange); }
+
+/* ── Filters row ────────────────────────────── */
+.filters-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.category-scroll {
+  flex: 1; display: flex; gap: 6px; overflow-x: auto;
+  scrollbar-width: none; padding-bottom: 2px;
+}
+.category-scroll::-webkit-scrollbar { display: none; }
+.cat-pill {
+  flex-shrink: 0; padding: 6px 13px; border-radius: 50px;
+  font-size: .8rem; font-weight: 600;
+  border: 1.5px solid var(--border); background: var(--card);
+  color: var(--muted); white-space: nowrap; transition: all .15s;
+}
+.cat-pill.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+.cat-pill:not(.active):hover { border-color: var(--orange); color: var(--orange); }
+.cat-pill .cnt {
+  background: rgba(0,0,0,.08); border-radius: 20px;
+  padding: 1px 6px; font-size: .72rem; margin-left: 4px;
+}
+.cat-pill.active .cnt { background: rgba(255,255,255,.25); }
+
+.sort-select {
+  flex-shrink: 0; padding: 7px 30px 7px 11px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: inherit; font-size: .82rem; font-weight: 600;
+  color: var(--navy-light); background: var(--card);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B6867' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  cursor: pointer;
+}
+
+/* ── Item grid ──────────────────────────────── */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 14px; margin-bottom: 24px;
+}
+@media (min-width: 480px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); } }
+@media (min-width: 768px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; } }
+@media (min-width: 1024px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); } }
+
+/* ── Item card ──────────────────────────────── */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.item-card {
+  background: var(--card); border-radius: var(--radius);
+  overflow: hidden; border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 0 0 0 rgba(240,123,63,0);
+  display: flex; flex-direction: column;
+  transition: transform .25s cubic-bezier(.34,1.3,.64,1), box-shadow .25s;
+  animation: cardIn .45s ease both;
+}
+.ghost-card { animation: none !important; }
+.item-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.09), 0 0 0 1.5px rgba(240,123,63,.2);
+}
+
+/* Staggered entry */
+.items-grid .item-card:nth-child(1)  { animation-delay: .03s; }
+.items-grid .item-card:nth-child(2)  { animation-delay: .07s; }
+.items-grid .item-card:nth-child(3)  { animation-delay: .11s; }
+.items-grid .item-card:nth-child(4)  { animation-delay: .15s; }
+.items-grid .item-card:nth-child(5)  { animation-delay: .19s; }
+.items-grid .item-card:nth-child(6)  { animation-delay: .23s; }
+.items-grid .item-card:nth-child(7)  { animation-delay: .27s; }
+.items-grid .item-card:nth-child(8)  { animation-delay: .31s; }
+.items-grid .item-card:nth-child(9)  { animation-delay: .35s; }
+.items-grid .item-card:nth-child(10) { animation-delay: .38s; }
+.items-grid .item-card:nth-child(11) { animation-delay: .41s; }
+.items-grid .item-card:nth-child(12) { animation-delay: .44s; }
+
+/* Image */
+.item-img-wrap {
+  position: relative; padding-bottom: 100%;
+  background: #EDECEA; overflow: hidden;
+}
+.item-img-wrap img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; transition: transform .4s cubic-bezier(.25,.46,.45,.94);
+}
+.item-card:hover .item-img-wrap img { transform: scale(1.08); }
+.img-placeholder {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; color: #ccc; font-size: 2.5rem;
+}
+
+/* Sold overlay */
+.sold-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,.7) 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.sold-label {
+  background: var(--red); color: #fff;
+  font-weight: 900; font-size: .82rem; letter-spacing: 1.5px;
+  padding: 5px 16px; border-radius: 4px;
+  transform: rotate(-12deg);
+  box-shadow: 0 3px 10px rgba(0,0,0,.3);
+  text-transform: uppercase;
+}
+
+/* Body */
+.item-body { padding: 10px 12px 10px; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.item-name {
+  font-size: .875rem; font-weight: 700; color: var(--navy);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.item-price {
+  font-size: .95rem; font-weight: 800; color: var(--orange);
+}
+.item-meta { font-size: .73rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.item-meta span { display: flex; align-items: center; gap: 4px; }
+.item-meta i { color: var(--orange); font-size: .6rem; flex-shrink: 0; }
+
+/* WhatsApp button */
+.item-action { padding: 0 10px 8px; }
+.contact-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 8px; border-radius: var(--radius-sm);
+  background: #25D366; color: #fff; font-weight: 700; font-size: .82rem;
+  transition: background .15s, transform .15s;
+}
+.contact-btn:hover { background: #1da851; transform: scale(1.02); }
+
+/* ── Reaction zone ──────────────────────────── */
+.rxn-zone {
+  display: flex; align-items: center; gap: 5px;
+  padding: 8px 10px; border-top: 1px solid var(--border);
+  min-height: 40px;
+}
+.rxn-bubbles {
+  display: flex; align-items: center; flex-shrink: 0;
+  cursor: pointer; background: none; border: none; padding: 0;
+  font-family: inherit;
+}
+.rxn-bubble {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--card); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; line-height: 1; margin-left: -7px;
+  transition: transform .15s;
+}
+.rxn-bubble:first-child { margin-left: 0; }
+.rxn-bubbles:hover .rxn-bubble { transform: scale(1.15); }
+.rxn-total {
+  font-size: .72rem; font-weight: 700; color: var(--muted);
+  flex-shrink: 0; margin-left: 4px;
+}
+.rxn-add {
+  margin-left: auto; width: 26px; height: 26px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--muted); font-size: .85rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; flex-shrink: 0; font-family: inherit;
+  padding: 0 0 2px; line-height: 1;
+}
+.rxn-add:hover, .rxn-add.has-reacted {
+  border-color: var(--orange); color: var(--orange); background: var(--orange-light);
+}
+.rxn-add.has-reacted { font-size: .95rem; }
+
+/* ── Empty state ────────────────────────────── */
+.no-items {
+  grid-column: 1/-1; text-align: center; padding: 52px 20px;
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.no-items i { font-size: 3rem; color: #ddd; display: block; margin-bottom: 14px; }
+.no-items h3 { font-size: 1.05rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.no-items p { font-size: .875rem; color: #aaa; margin-bottom: 18px; }
+.btn-orange {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--orange); color: #fff;
+  padding: 9px 20px; border-radius: var(--radius-sm);
+  font-weight: 700; font-size: .875rem; transition: background .15s;
+}
+.btn-orange i { transform: translate(-1.5px, 1px); }
+.btn-orange:hover { background: var(--orange-dark); }
+
+/* ── Reactors modal ─────────────────────────── */
+#rxn-modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 1200;
+  align-items: flex-end; justify-content: center;
+}
+#rxn-modal-backdrop.open { display: flex; }
+@media (min-width: 480px) { #rxn-modal-backdrop { align-items: center; } }
+
+#rxn-modal {
+  background: var(--card); width: 100%; max-width: 420px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  max-height: 80vh; display: flex; flex-direction: column;
+  animation: slideUp .22s ease;
+}
+@media (min-width: 480px) {
+  #rxn-modal { border-radius: var(--radius); max-height: 70vh; }
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.rxn-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 12px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rxn-modal-header h3 { font-size: .95rem; font-weight: 700; color: var(--navy); }
+.rxn-modal-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: none; background: var(--bg); color: var(--muted);
+  cursor: pointer; font-size: 1rem; display: flex;
+  align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.rxn-modal-close:hover { background: var(--border); }
+
+.rxn-modal-pills {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rxn-modal-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 11px; border-radius: 50px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  font-size: .82rem; font-weight: 600; color: var(--muted);
+}
+.rxn-modal-pill-cnt {
+  background: rgba(0,0,0,.08); border-radius: 20px;
+  padding: 1px 6px; font-size: .72rem;
+}
+
+.rxn-modal-list {
+  overflow-y: auto; flex: 1; padding: 8px 0;
+}
+.rxn-modal-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 18px;
+}
+.rxn-modal-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--navy); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; font-weight: 700; flex-shrink: 0;
+}
+.rxn-modal-name { flex: 1; font-size: .875rem; font-weight: 500; color: var(--navy); }
+.rxn-modal-emoji { font-size: 1.15rem; }
+.rxn-modal-empty {
+  text-align: center; padding: 28px 16px;
+  font-size: .875rem; color: var(--muted);
+}
+.rxn-modal-more {
+  text-align: center; padding: 8px 16px 12px;
+  font-size: .78rem; color: var(--muted);
+}
+
+/* ── Pagination ─────────────────────────────── */
+.pagination { display: flex; justify-content: center; gap: 4px; margin-top: 8px; }
+.pagination a, .pagination span {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--card);
+  font-size: .85rem; font-weight: 600; color: var(--muted);
+  transition: all .15s;
+}
+.pagination a:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+.pagination .active span { background: var(--orange); border-color: var(--orange); color: #fff; }
+.pagination .disabled span { color: #ddd; pointer-events: none; }
+{% endblock %}
+
+{% block content %}
+
+<!-- Campus tabs -->
+<div class="campus-tabs">
+  {% for code, label in campus_tabs %}
+  <a href="?campus={{ code }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&c={{ selected_category }}{% endif %}&sort={{ sort_method }}"
+     class="campus-tab {% if selected_campus == code %}active{% endif %}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Category pills + sort -->
+<div class="filters-row">
+  <div class="category-scroll">
+    <a href="?campus={{ selected_campus }}{% if query %}&q={{ query }}{% endif %}&sort={{ sort_method }}"
+       class="cat-pill {% if not selected_category %}active{% endif %}">
+      All <span class="cnt">{{ paginator.count }}</span>
+    </a>
+    {% for cat in categories_with_counts %}{% if cat.item_count > 0 %}
+    <a href="?campus={{ selected_campus }}&c={{ cat.id }}{% if query %}&q={{ query }}{% endif %}&sort={{ sort_method }}"
+       class="cat-pill {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}">
+      {% if cat.icon_class %}<i class="{{ cat.icon_class }}" style="margin-right:3px"></i>{% endif %}
+      {{ cat.name }} <span class="cnt">{{ cat.item_count }}</span>
+    </a>
+    {% endif %}{% endfor %}
+  </div>
+
+  <form id="sort-form" method="get">
+    <input type="hidden" name="campus" value="{{ selected_campus }}">
+    {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+    {% if selected_category %}<input type="hidden" name="c" value="{{ selected_category }}">{% endif %}
+    <select class="sort-select" name="sort" onchange="document.getElementById('sort-form').submit()">
+      <option value="0" {% if sort_method == '0' %}selected{% endif %}>Newest</option>
+      <option value="1" {% if sort_method == '1' %}selected{% endif %}>Price ↑</option>
+      <option value="2" {% if sort_method == '2' %}selected{% endif %}>Price ↓</option>
+    </select>
+  </form>
+</div>
+
+<!-- Items grid -->
+<div class="items-grid">
+  {% for item in items %}
+  <div class="item-card">
+    <a href="{% url 'core:item_detail' item.id %}">
+      <div class="item-img-wrap">
+        {% with item.images.all|first as img %}
+        {% if img %}
+          <img src="{{ img.image.url }}" alt="{{ item.name }}" loading="lazy">
+        {% else %}
+          <div class="img-placeholder"><i class="fas fa-image"></i></div>
+        {% endif %}
+        {% endwith %}
+        {% if item.is_sold %}
+        <div class="sold-overlay"><div class="sold-label">Sold</div></div>
+        {% endif %}
+      </div>
+    </a>
+
+    <div class="item-body">
+      <div class="item-name" title="{{ item.name }}">{{ item.name }}</div>
+      <div class="item-price">{% if item.seller.campus == 'DUB' %}AED{% else %}₹{% endif %}{{ item.price }}</div>
+      <div class="item-meta">
+        {% if item.hostel %}<span><i class="fas fa-building"></i>{{ item.hostel.name }}</span>{% endif %}
+        <span><i class="far fa-clock"></i>{{ item.updated_at|timesince }} ago</span>
+      </div>
+    </div>
+
+    {% if item.whatsapp and not item.is_sold %}
+    <div class="item-action">
+      <a href="{{ item.whatsapp }}" target="_blank" rel="noopener" class="contact-btn">
+        <i class="fab fa-whatsapp"></i> Contact
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Reaction zone -->
+    <div class="rxn-zone">
+      <button type="button" class="rxn-bubbles" id="rb-{{ item.id }}"
+              onclick="openReactorsModal({{ item.id }})"></button>
+      <span class="rxn-total" id="rt-{{ item.id }}"
+            style="cursor:pointer" onclick="openReactorsModal({{ item.id }})"></span>
+      <button class="rxn-add" id="ra-{{ item.id }}" data-id="{{ item.id }}"
+              type="button" title="React"
+              onclick="cardPickerOpen(event, {{ item.id }}, this)">+</button>
+    </div>
+  </div>
+  {% empty %}
+  <div class="no-items">
+    <i class="fas fa-search"></i>
+    <h3>No items found</h3>
+    <p>{% if query %}No results for "{{ query }}"{% else %}Nothing listed here yet{% endif %}</p>
+    <a href="{% url 'core:add_product' %}" class="btn-orange"><i class="fas fa-plus"></i> List an item</a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if paginator.num_pages > 1 %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+  <a href="?campus={{ selected_campus }}&page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&c={{ selected_category }}{% endif %}&sort={{ sort_method }}">
+    <i class="fas fa-chevron-left"></i>
+  </a>
+  {% else %}
+  <div class="disabled"><span><i class="fas fa-chevron-left"></i></span></div>
+  {% endif %}
+
+  {% for num in paginator.page_range %}
+    {% if page_obj.number == num %}
+    <div class="active"><span>{{ num }}</span></div>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+    <a href="?campus={{ selected_campus }}&page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&c={{ selected_category }}{% endif %}&sort={{ sort_method }}">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if page_obj.has_next %}
+  <a href="?campus={{ selected_campus }}&page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&c={{ selected_category }}{% endif %}&sort={{ sort_method }}">
+    <i class="fas fa-chevron-right"></i>
+  </a>
+  {% else %}
+  <div class="disabled"><span><i class="fas fa-chevron-right"></i></span></div>
+  {% endif %}
+</nav>
+{% endif %}
+
+<!-- Reactors modal -->
+<div id="rxn-modal-backdrop" onclick="closeReactorsModal(event)">
+  <div id="rxn-modal">
+    <div class="rxn-modal-header">
+      <h3 id="rxn-modal-title">Reactions</h3>
+      <button class="rxn-modal-close" onclick="closeReactorsModal(null)" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="rxn-modal-pills" id="rxn-modal-pills"></div>
+    <div class="rxn-modal-list" id="rxn-modal-list"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Reactions ────────────────────────────────────────────────────────────────
+var REACTION_DATA = {{ reaction_data_json|safe }};
+
+function renderCardReactions(itemId, data) {
+  var rb = document.getElementById('rb-' + itemId);
+  var rt = document.getElementById('rt-' + itemId);
+  var ra = document.getElementById('ra-' + itemId);
+  if (!rb) return;
+
+  rb.innerHTML = '';
+  (data.emojis || []).forEach(function(e) {
+    var span = document.createElement('span');
+    span.className = 'rxn-bubble';
+    span.textContent = e;
+    rb.appendChild(span);
+  });
+
+  rt.textContent = data.total > 0 ? data.total : '';
+
+  if (data.mine) {
+    ra.textContent = data.mine;
+    ra.classList.add('has-reacted');
+    ra.title = 'You reacted ' + data.mine + ' — click to change';
+  } else {
+    ra.textContent = '+';
+    ra.classList.remove('has-reacted');
+    ra.title = 'React';
+  }
+}
+
+// Init all cards
+Object.keys(REACTION_DATA).forEach(function(itemId) {
+  renderCardReactions(itemId, REACTION_DATA[itemId]);
+});
+
+function cardPickerOpen(event, itemId, btn) {
+  event.preventDefault();
+  event.stopPropagation();
+  var mine = (REACTION_DATA[String(itemId)] || {}).mine || null;
+  QR.open(btn, mine, function(emoji) {
+    cardReact(itemId, emoji);
+  });
+}
+
+function cardReact(itemId, emoji) {
+  fetch('/react/' + itemId + '/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCsrf(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'emoji=' + encodeURIComponent(emoji),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var updated = {
+      emojis: data.recent_emojis,
+      total: data.total,
+      mine: data.my_emoji,
+    };
+    REACTION_DATA[String(itemId)] = updated;
+    renderCardReactions(itemId, updated);
+    // Update reactor cache with fresh data from the POST response
+    REACTORS_CACHE[String(itemId)] = data;
+  })
+  .catch(function() {});
+}
+
+// ── Reactors modal ───────────────────────────────────────────────────────────
+// In-memory cache: lives only for this page load, cleared on navigate/reload.
+var REACTORS_CACHE = {};
+
+function renderModalData(data) {
+  var pills = document.getElementById('rxn-modal-pills');
+  var list = document.getElementById('rxn-modal-list');
+  var title = document.getElementById('rxn-modal-title');
+  var total = data.total || 0;
+
+  title.textContent = 'Reactions' + (total > 0 ? ' (' + total + ')' : '');
+
+  // Emoji group pills
+  pills.innerHTML = '';
+  var eg = data.emoji_groups || {};
+  Object.keys(eg).forEach(function(emoji) {
+    var pill = document.createElement('span');
+    pill.className = 'rxn-modal-pill';
+    pill.innerHTML = emoji + ' <span class="rxn-modal-pill-cnt">' + eg[emoji].length + '</span>';
+    pills.appendChild(pill);
+  });
+
+  // Reactor rows
+  list.innerHTML = '';
+  var reactors = data.reactors || [];
+  if (reactors.length === 0) {
+    list.innerHTML = '<div class="rxn-modal-empty">No reactions yet — be first!</div>';
+  } else {
+    reactors.forEach(function(r) {
+      var row = document.createElement('div');
+      row.className = 'rxn-modal-row';
+      row.innerHTML =
+        '<div class="rxn-modal-avatar">' + r.initial + '</div>' +
+        '<span class="rxn-modal-name">' + r.name + '</span>' +
+        '<span class="rxn-modal-emoji">' + r.emoji + '</span>';
+      list.appendChild(row);
+    });
+    if (total > 20) {
+      var more = document.createElement('div');
+      more.className = 'rxn-modal-more';
+      more.textContent = 'Showing 20 of ' + total + ' reactions';
+      list.appendChild(more);
+    }
+  }
+}
+
+function openReactorsModal(itemId) {
+  var key = String(itemId);
+  var backdrop = document.getElementById('rxn-modal-backdrop');
+  var list = document.getElementById('rxn-modal-list');
+
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Serve from cache instantly if available
+  if (REACTORS_CACHE[key]) {
+    renderModalData(REACTORS_CACHE[key]);
+    return;
+  }
+
+  // Otherwise show spinner and fetch
+  document.getElementById('rxn-modal-title').textContent = 'Reactions';
+  document.getElementById('rxn-modal-pills').innerHTML = '';
+  list.innerHTML = '<div class="rxn-modal-empty"><i class="fas fa-spinner fa-spin"></i></div>';
+
+  fetch('/react/' + itemId + '/', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    REACTORS_CACHE[key] = data;
+    renderModalData(data);
+  })
+  .catch(function() {
+    list.innerHTML = '<div class="rxn-modal-empty">Couldn\'t load reactions.</div>';
+  });
+}
+
+function closeReactorsModal(event) {
+  if (event && document.getElementById('rxn-modal').contains(event.target)) return;
+  document.getElementById('rxn-modal-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeReactorsModal(null);
+});
+
+// ── 8-row grid adjustment ────────────────────────────────────────────────────
+(function () {
+  var grid = document.querySelector('.items-grid');
+  if (!grid) return;
+
+  function getCards() {
+    return Array.from(grid.querySelectorAll('.item-card:not(.ghost-card)'));
+  }
+
+  function getColCount() {
+    var cards = getCards();
+    if (cards.length === 0) return 1;
+    var firstTop = cards[0].getBoundingClientRect().top;
+    var cols = 0;
+    for (var i = 0; i < cards.length; i++) {
+      if (Math.abs(cards[i].getBoundingClientRect().top - firstTop) < 2) { cols++; } else { break; }
+    }
+    return Math.max(cols, 1);
+  }
+
+  function adjust() {
+    var cards = getCards();
+    if (cards.length === 0) return;
+    var cols = getColCount();
+    var maxItems = 8 * cols;
+
+    cards.forEach(function (c, i) { c.style.display = i < maxItems ? '' : 'none'; });
+
+    grid.querySelectorAll('.ghost-card').forEach(function (g) { g.remove(); });
+    var visible = Math.min(cards.length, maxItems);
+    var rem = visible % cols;
+    if (rem !== 0) {
+      for (var i = 0; i < cols - rem; i++) {
+        var g = document.createElement('div');
+        g.className = 'ghost-card item-card';
+        g.style.cssText = 'visibility:hidden;pointer-events:none;animation:none';
+        grid.appendChild(g);
+      }
+    }
+
+    var perPage = maxItems;
+    document.querySelectorAll('.pagination a[href]').forEach(function (a) {
+      try { var u = new URL(a.href); u.searchParams.set('per_page', perPage); a.href = u.toString(); } catch(e) {}
+    });
+  }
+
+  window.addEventListener('load', adjust);
+  var t;
+  window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(adjust, 150); });
+})();
+</script>
+{% endblock %}

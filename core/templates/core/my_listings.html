@@ -1,0 +1,313 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}My Listings — SWD Store{% endblock %}
+
+{% block extra_css %}
+.page-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px; gap: 10px;
+}
+.page-title { font-size: 1.4rem; font-weight: 800; color: var(--navy); }
+.add-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--orange); color: #fff;
+  padding: 9px 18px; border-radius: var(--radius-sm);
+  font-size: .875rem; font-weight: 700; transition: background .15s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.add-btn i { font-size: .875rem; display: block; transform: translate(-1px, 1px); }
+.add-btn:hover { background: var(--orange-dark); }
+
+.listings-meta {
+  font-size: .82rem; color: var(--muted); margin-bottom: 16px;
+}
+
+/* ── Bulk toolbar ──────────────────────────── */
+.bulk-bar {
+  position: sticky; top: 58px; z-index: 50;
+  background: var(--navy); color: #fff;
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  display: none; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.bulk-bar.visible { display: flex; }
+.bulk-bar-count { font-size: .875rem; font-weight: 700; margin-right: 4px; }
+.bulk-bar-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.bulk-action-btn {
+  padding: 7px 13px; border-radius: 6px; font-size: .78rem; font-weight: 700;
+  border: none; cursor: pointer; font-family: inherit; transition: all .15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.bab-repost { background: #fff; color: var(--navy); }
+.bab-repost:hover { background: var(--orange); color: #fff; }
+.bab-sold { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+.bab-sold:hover { background: rgba(255,255,255,.25); }
+.bab-delete { background: var(--red); color: #fff; }
+.bab-delete:hover { background: #c0392b; }
+.bab-clear { background: none; color: rgba(255,255,255,.6); font-size: .75rem; padding: 7px; }
+.bab-clear:hover { color: #fff; }
+
+/* ── Select-all row ────────────────────────── */
+.sel-all-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px; font-size: .82rem; color: var(--muted); cursor: pointer;
+  user-select: none;
+}
+.sel-all-row input { accent-color: var(--orange); cursor: pointer; }
+
+/* ── Listing cards ─────────────────────────── */
+.listing-list { display: flex; flex-direction: column; gap: 10px; }
+
+.listing-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start;
+  transition: border-color .2s;
+}
+.listing-card.selected { border-color: var(--orange); background: #fffaf7; }
+
+.listing-cb {
+  margin-top: 2px; cursor: pointer; accent-color: var(--orange);
+  width: 17px; height: 17px; flex-shrink: 0;
+}
+
+.listing-thumb { flex-shrink: 0; }
+.listing-thumb a { display: block; }
+.listing-img {
+  width: 80px; height: 80px; object-fit: cover;
+  border-radius: 10px; border: 1px solid var(--border); display: block;
+}
+.listing-img-ph {
+  width: 80px; height: 80px; border-radius: 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: #ccc; font-size: 1.5rem;
+}
+@media (max-width: 400px) {
+  .listing-img, .listing-img-ph { width: 68px; height: 68px; }
+}
+
+.listing-body { flex: 1; min-width: 0; }
+.listing-name {
+  font-size: .95rem; font-weight: 700; color: var(--navy);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block; margin-bottom: 2px; transition: color .15s;
+}
+.listing-name:hover { color: var(--orange); }
+
+.listing-price { font-size: 1.05rem; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
+
+.listing-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+.tag {
+  padding: 2px 9px; border-radius: 50px; font-size: .72rem; font-weight: 700;
+  border: 1.5px solid transparent;
+}
+.tag-active { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
+.tag-sold { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
+.tag-meta { background: var(--bg); color: var(--muted); border-color: var(--border); }
+
+/* Per-item actions */
+.listing-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.act {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 11px; border-radius: 6px;
+  font-size: .78rem; font-weight: 600; transition: all .15s;
+  border: 1.5px solid transparent; cursor: pointer;
+  white-space: nowrap;
+}
+.act-edit { background: var(--bg); color: var(--navy); border-color: var(--border); }
+.act-edit:hover { background: var(--border); }
+.act-repost { background: var(--orange-light); color: var(--orange); border-color: rgba(240,123,63,.3); }
+.act-repost:hover { background: var(--orange); color: #fff; }
+.act-sold { background: var(--bg); color: var(--muted); border-color: var(--border); }
+.act-sold:hover { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
+.act-del { background: #FEF2F2; color: var(--red); border-color: #FECACA; }
+.act-del:hover { background: #FEE2E2; }
+
+/* ── Empty state ───────────────────────────── */
+.empty-wrap {
+  text-align: center; padding: 60px 20px;
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.empty-wrap i { font-size: 3rem; color: #ddd; display: block; margin-bottom: 14px; }
+.empty-wrap h3 { font-size: 1.05rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.empty-wrap p { font-size: .875rem; color: #aaa; margin-bottom: 20px; }
+.empty-wrap a {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--orange); color: #fff;
+  padding: 10px 22px; border-radius: var(--radius-sm);
+  font-weight: 700; font-size: .875rem; transition: background .15s;
+}
+.empty-wrap a i { transform: translate(-1.5px, 1px); }
+.empty-wrap a:hover { background: var(--orange-dark); }
+{% endblock %}
+
+{% block content %}
+<div class="page-hdr">
+  <h1 class="page-title">My Listings</h1>
+  <a href="{% url 'core:add_product' %}" class="add-btn">
+    <i class="fas fa-plus"></i> New Listing
+  </a>
+</div>
+
+{% if listings %}
+<p class="listings-meta">{{ listings|length }} listing{{ listings|length|pluralize }}</p>
+
+<form id="bulk-form" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="selected_items" id="selected-items-input">
+
+  <!-- Bulk action bar (appears when items selected) -->
+  <div id="bulk-bar" class="bulk-bar">
+    <span id="bulk-count" class="bulk-bar-count">0 selected</span>
+    <div class="bulk-bar-actions">
+      <button type="button" class="bulk-action-btn bab-repost" onclick="bulkDo('repost')">
+        <i class="fas fa-redo"></i> Repost
+      </button>
+      <button type="button" class="bulk-action-btn bab-sold" onclick="bulkDo('toggle_sold')">
+        <i class="fas fa-tag"></i> Toggle Sold
+      </button>
+      <button type="button" class="bulk-action-btn bab-delete"
+              onclick="if(confirm('Delete ' + selectedIds.size + ' item(s)?')) bulkDo('delete')">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+      <button type="button" class="bulk-action-btn bab-clear" onclick="clearSel()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Select all -->
+  <label class="sel-all-row">
+    <input type="checkbox" id="sel-all" onchange="toggleAll(this)">
+    Select all
+  </label>
+
+  <div class="listing-list">
+    {% for item in listings %}
+    <div class="listing-card" id="card-{{ item.id }}">
+      <input type="checkbox" class="listing-cb item-cb" value="{{ item.id }}"
+             onchange="onCheck(this)">
+
+      <div class="listing-thumb">
+        <a href="{% url 'core:item_detail' item.id %}">
+          {% with item.images.all|first as thumb %}
+          {% if thumb %}
+            <img src="{{ thumb.image.url }}" alt="{{ item.name }}" class="listing-img">
+          {% else %}
+            <div class="listing-img-ph"><i class="fas fa-image"></i></div>
+          {% endif %}
+          {% endwith %}
+        </a>
+      </div>
+
+      <div class="listing-body">
+        <a href="{% url 'core:item_detail' item.id %}" class="listing-name">{{ item.name }}</a>
+        <div class="listing-price">
+          {% if item.seller.campus == 'DUB' %}AED{% else %}₹{% endif %}{{ item.price }}
+        </div>
+        <div class="listing-tags">
+          <span class="tag {% if item.is_sold %}tag-sold{% else %}tag-active{% endif %}">
+            {% if item.is_sold %}Sold{% else %}Active{% endif %}
+          </span>
+          {% if item.hostel %}<span class="tag tag-meta"><i class="fas fa-building" style="margin-right:3px"></i>{{ item.hostel.name }}</span>{% endif %}
+          <span class="tag tag-meta">{{ item.updated_at|timesince }} ago</span>
+        </div>
+        <div class="listing-actions">
+          <a href="{% url 'core:edit_item' item.id %}" class="act act-edit">
+            <i class="fas fa-pen"></i> Edit
+          </a>
+          <a href="{% url 'core:repost' item.id %}" class="act act-repost">
+            <i class="fas fa-redo"></i> Repost
+          </a>
+          {% if not item.is_sold %}
+          <a href="{% url 'core:mark_sold' item.id %}" class="act act-sold">
+            <i class="fas fa-check"></i> Mark Sold
+          </a>
+          {% endif %}
+          <a href="{% url 'core:delete_item' item.id %}"
+             onclick="return confirm('Delete \'{{ item.name|escapejs }}\'?')"
+             class="act act-del">
+            <i class="fas fa-trash"></i> Delete
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</form>
+
+{% else %}
+<div class="empty-wrap">
+  <i class="fas fa-box-open"></i>
+  <h3>No listings yet</h3>
+  <p>List your first item and connect with buyers on campus.</p>
+  <a href="{% url 'core:add_product' %}"><i class="fas fa-plus"></i> Add your first item</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var selectedIds = new Set();
+
+function onCheck(cb) {
+  var id = cb.value;
+  var card = document.getElementById('card-' + id);
+  if (cb.checked) {
+    selectedIds.add(id);
+    card.classList.add('selected');
+  } else {
+    selectedIds.delete(id);
+    card.classList.remove('selected');
+  }
+  syncBulkBar();
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('.item-cb').forEach(function(box) {
+    box.checked = cb.checked;
+    onCheck(box);
+  });
+}
+
+function clearSel() {
+  document.querySelectorAll('.item-cb').forEach(function(cb) {
+    cb.checked = false;
+    document.getElementById('card-' + cb.value).classList.remove('selected');
+  });
+  selectedIds.clear();
+  document.getElementById('sel-all').checked = false;
+  document.getElementById('sel-all').indeterminate = false;
+  syncBulkBar();
+}
+
+function syncBulkBar() {
+  var bar = document.getElementById('bulk-bar');
+  var countEl = document.getElementById('bulk-count');
+  var n = selectedIds.size;
+  if (n > 0) {
+    bar.classList.add('visible');
+    countEl.textContent = n + ' selected';
+  } else {
+    bar.classList.remove('visible');
+  }
+  document.getElementById('selected-items-input').value = Array.from(selectedIds).join(',');
+
+  // Update select-all checkbox state
+  var all = document.querySelectorAll('.item-cb');
+  var selAll = document.getElementById('sel-all');
+  selAll.indeterminate = n > 0 && n < all.length;
+  selAll.checked = all.length > 0 && n === all.length;
+}
+
+function bulkDo(action) {
+  if (selectedIds.size === 0) return;
+  var form = document.getElementById('bulk-form');
+  form.action = '{% url "core:bulk_action" "PLACEHOLDER" %}'.replace('PLACEHOLDER', action);
+  form.submit();
+}
+</script>
+{% endblock %}

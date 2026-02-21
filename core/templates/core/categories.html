@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Categories — SWD Store{% endblock %}
+
+{% block extra_css %}
+.page-header { margin-bottom: 20px; }
+.page-title { font-size: 1.4rem; font-weight: 800; color: var(--navy); }
+
+.cat-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+@media (min-width: 480px) { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); } }
+@media (min-width: 768px) { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; } }
+
+.cat-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  padding: 24px 16px; display: flex; flex-direction: column; align-items: center;
+  text-align: center; transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.cat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--orange); }
+
+.cat-icon-wrap {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--orange-light); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px; transition: background .2s;
+}
+.cat-card:hover .cat-icon-wrap { background: var(--orange); }
+.cat-icon-wrap i { font-size: 1.3rem; color: var(--orange); transition: color .2s; }
+.cat-card:hover .cat-icon-wrap i { color: #fff; }
+
+.cat-name {
+  font-size: .9rem; font-weight: 700; color: var(--navy);
+  margin-bottom: 4px; transition: color .2s;
+}
+.cat-card:hover .cat-name { color: var(--orange); }
+.cat-count { font-size: .75rem; color: var(--muted); font-weight: 500; }
+
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.empty-state i { font-size: 3rem; color: #ddd; display: block; margin-bottom: 14px; }
+.empty-state p { color: var(--muted); font-size: .9rem; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Browse by Category</h1>
+</div>
+
+{% if categories %}
+<div class="cat-grid">
+  {% for cat in categories %}
+  <a href="{% url 'core:home' %}?c={{ cat.id }}" class="cat-card">
+    <div class="cat-icon-wrap">
+      {% if cat.icon_class %}
+        <i class="{{ cat.icon_class }}"></i>
+      {% else %}
+        <i class="fas fa-tag"></i>
+      {% endif %}
+    </div>
+    <div class="cat-name">{{ cat.name }}</div>
+    <div class="cat-count">{{ cat.items.count }} item{{ cat.items.count|pluralize }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-th-large"></i>
+  <p>No categories yet.</p>
+</div>
+{% endif %}
+{% endblock %}
