@@ -6,6 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}BITS Pilani Store{% endblock %}</title>
 
+  <!-- SEO & social preview (WhatsApp, Telegram, Discord, iMessage…) -->
+  <meta name="description" content="{% block meta_description %}Buy and sell second-hand items within your BITS Pilani campus. Available across Goa, Hyderabad, Pilani, and Dubai campuses.{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BITS Pilani Store">
+  <meta property="og:title" content="{% block og_title %}BITS Pilani Store{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Buy and sell second-hand items within your BITS Pilani campus. Covers Goa, Hyderabad, Pilani, and Dubai.{% endblock %}">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/icon_192.png' %}">
+  <meta name="twitter:card" content="summary">
+
   <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/icon_192.png' %}">
   <link rel="icon" type="image/png" href="{% static 'images/icon.png' %}">
   <link rel="apple-touch-icon" href="{% static 'images/icon_192.png' %}">
