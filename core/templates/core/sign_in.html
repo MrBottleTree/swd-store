@@ -87,12 +87,25 @@
       font-size: .7rem; font-weight: 800;
       padding: 2px 6px; border-radius: 4px;
     }
+    .alert {
+      padding: 10px 14px; border-radius: 8px;
+      font-size: .85rem; font-weight: 500; margin-bottom: 18px;
+      text-align: left;
+    }
+    .alert-error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .alert-success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">SWD Store</div>
     <div class="tagline">BITS Pilani Marketplace</div>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
     <p class="subtitle">
       Buy and sell second-hand items within your campus community.
