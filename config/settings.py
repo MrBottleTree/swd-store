@@ -14,11 +14,15 @@ DEBUG = os.getenv('DEBUG') == 'True'
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    '140.238.250.250',
+    'swdstore.bits-pilani.ac.in'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
     'http://127.0.0.1',
+    'http://swdstore.bits-pilani.ac.in',
+    'https://swdstore.bits-pilani.ac.in/'
 ]
 
 INSTALLED_APPS = [
