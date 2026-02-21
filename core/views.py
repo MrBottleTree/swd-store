@@ -2,6 +2,7 @@ import json
 import os
 import secrets
 import requests
+from django.core.files.base import ContentFile
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse
@@ -64,12 +65,31 @@ def sign_in(request):
     })
 
 
+def _download_avatar(person, picture_url):
+    """Download profile picture from Google and store it. Replaces any existing avatar."""
+    try:
+        resp = requests.get(picture_url, timeout=5)
+        if resp.status_code != 200:
+            return
+        # Delete old avatar file from disk before overwriting
+        if person.avatar:
+            person.avatar.delete(save=False)
+        person.avatar.save(f'avatar_{person.id}.jpg', ContentFile(resp.content), save=False)
+        Person.objects.filter(pk=person.pk).update(avatar=person.avatar.name)
+    except Exception:
+        pass  # Never let avatar download block sign-in
+
+
 def _complete_sign_in(request, user_data):
     request.session['user_data'] = user_data
     email = user_data['email']
-    if not Person.objects.filter(email=email).exists():
-        person = Person(email=email, name=user_data.get('name', ''))
-        person.save()
+    person, created = Person.objects.get_or_create(
+        email=email,
+        defaults={'name': user_data.get('name', '')},
+    )
+    picture_url = user_data.get('picture')
+    if picture_url:
+        _download_avatar(person, picture_url)
     return redirect('core:home')
 
 
@@ -657,6 +677,7 @@ def react_item(request, item_id):
                 'name': r.person.name,
                 'initial': (r.person.name[0].upper() if r.person.name else '?'),
                 'emoji': r.reaction_type,
+                'avatar_url': r.person.avatar.url if r.person.avatar else None,
             }
             for r in all_rxns[:20]
         ]
@@ -717,6 +738,7 @@ def react_item(request, item_id):
             'name': r.person.name,
             'initial': (r.person.name[0].upper() if r.person.name else '?'),
             'emoji': r.reaction_type,
+            'avatar_url': r.person.avatar.url if r.person.avatar else None,
         }
         for r in all_rxns[:20]
     ]

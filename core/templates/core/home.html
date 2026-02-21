@@ -269,7 +269,9 @@
   background: var(--navy); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: .8rem; font-weight: 700; flex-shrink: 0;
+  overflow: hidden;
 }
+.rxn-modal-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .rxn-modal-name { flex: 1; font-size: .875rem; font-weight: 500; color: var(--navy); }
 .rxn-modal-emoji { font-size: 1.15rem; }
 .rxn-modal-empty {
@@ -537,8 +539,11 @@ function renderModalData(data) {
     reactors.forEach(function(r) {
       var row = document.createElement('div');
       row.className = 'rxn-modal-row';
+      var avatarInner = r.avatar_url
+        ? '<img src="' + r.avatar_url + '" alt="' + r.name + '">'
+        : r.initial;
       row.innerHTML =
-        '<div class="rxn-modal-avatar">' + r.initial + '</div>' +
+        '<div class="rxn-modal-avatar">' + avatarInner + '</div>' +
         '<span class="rxn-modal-name">' + r.name + '</span>' +
         '<span class="rxn-modal-emoji">' + r.emoji + '</span>';
       list.appendChild(row);

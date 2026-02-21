@@ -165,7 +165,9 @@
   background: var(--navy); color: #fff;
   font-size: .7rem; font-weight: 700; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
+.drxn-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .drxn-name { font-size: .85rem; font-weight: 600; color: var(--navy); flex: 1; }
 .drxn-emo { font-size: 1.1rem; }
 .drxn-more { font-size: .78rem; color: var(--muted); text-align: center; padding-top: 6px; }
@@ -295,7 +297,13 @@
       <div class="drxn-list" id="drxn-list">
         {% for rxn in all_item_rxns %}
         <div class="drxn-row">
-          <div class="drxn-avatar">{{ rxn.person.name|first|upper }}</div>
+          <div class="drxn-avatar">
+            {% if rxn.person.avatar %}
+              <img src="{{ rxn.person.avatar.url }}" alt="{{ rxn.person.name }}">
+            {% else %}
+              {{ rxn.person.name|first|upper }}
+            {% endif %}
+          </div>
           <span class="drxn-name">{{ rxn.person.name }}</span>
           <span class="drxn-emo">{{ rxn.reaction_type }}</span>
         </div>
@@ -441,7 +449,10 @@ function updateDetailReactions(data) {
     data.reactors.forEach(function(r) {
       var row = document.createElement('div');
       row.className = 'drxn-row';
-      row.innerHTML = '<div class="drxn-avatar">' + r.initial + '</div>' +
+      var avatarInner = r.avatar_url
+        ? '<img src="' + r.avatar_url + '" alt="' + r.name + '">'
+        : r.initial;
+      row.innerHTML = '<div class="drxn-avatar">' + avatarInner + '</div>' +
                       '<span class="drxn-name">' + r.name + '</span>' +
                       '<span class="drxn-emo">' + r.emoji + '</span>';
       list.appendChild(row);

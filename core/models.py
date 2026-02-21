@@ -21,6 +21,7 @@ class Person(models.Model):
     phone = models.CharField(max_length=20, null=True)
     campus = models.CharField(max_length=5, choices=Campus.choices, null=False)
     hostel = models.ForeignKey('Hostel', on_delete=models.CASCADE, related_name='residents', null=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     registered_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
