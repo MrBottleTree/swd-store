@@ -85,9 +85,13 @@ def auth_receiver(request):
             return redirect('core:sign_in')
         code = request.GET.get('code')
         state = request.GET.get('state')
-        if not code or not state or state != request.session.get('oauth_state'):
-            messages.error(request, 'Sign-in failed. Please try again.')
+        session_state = request.session.get('oauth_state')
+        if not code or not state or state != session_state:
+            msg = (f'State mismatch (got {state!r}, expected {session_state!r})'
+                   if settings.DEBUG else 'Sign-in failed. Please try again.')
+            messages.error(request, msg)
             return redirect('core:sign_in')
+        redirect_uri = request.build_absolute_uri('/auth-receiver')
         try:
             token_resp = requests.post(
                 'https://oauth2.googleapis.com/token',
@@ -95,22 +99,26 @@ def auth_receiver(request):
                     'code': code,
                     'client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
                     'client_secret': settings.GOOGLE_OAUTH_CLIENT_SECRET,
-                    'redirect_uri': request.build_absolute_uri('/auth-receiver'),
+                    'redirect_uri': redirect_uri,
                     'grant_type': 'authorization_code',
                 },
                 timeout=10,
             )
-            id_token_str = token_resp.json().get('id_token')
+            token_json = token_resp.json()
+            id_token_str = token_json.get('id_token')
             if not id_token_str:
-                raise ValueError('No id_token')
+                raise ValueError(
+                    token_json.get('error_description') or token_json.get('error') or 'No id_token in response'
+                )
             user_data = id_token.verify_oauth2_token(
                 id_token_str,
                 google_requests.Request(),
                 settings.GOOGLE_OAUTH_CLIENT_ID,
                 clock_skew_in_seconds=10,
             )
-        except Exception:
-            messages.error(request, 'Sign-in failed. Please try again.')
+        except Exception as e:
+            msg = f'Sign-in error: {e}' if settings.DEBUG else 'Sign-in failed. Please try again.'
+            messages.error(request, msg)
             return redirect('core:sign_in')
         return _complete_sign_in(request, user_data)
 
