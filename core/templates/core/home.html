@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
-{% block title %}BITS Pilani Store · {{ selected_campus }}{% endblock %}
+{% block title %}{% if query %}Search: "{{ query }}" · BITS Pilani Store{% else %}BITS Pilani Store · {{ selected_campus }}{% endif %}{% endblock %}
 
 {% block extra_css %}
 /* ── Campus tabs ─────────────────────────────── */
@@ -333,18 +333,47 @@
   display: flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--card);
   font-size: .85rem; font-weight: 600; color: var(--muted);
   transition: all .15s;
 }
 .pagination a:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
-.pagination .active span { background: var(--orange); border-color: var(--orange); color: #fff; backdrop-filter: none; }
+.pagination .active span { background: var(--orange); border-color: var(--orange); color: #fff; }
 .pagination .disabled span { color: #ddd; pointer-events: none; }
+
+/* ── Search active banner ────────────────────── */
+.search-banner {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--orange-light); border: 1.5px solid rgba(240,123,63,.25);
+  border-radius: var(--radius-sm); padding: 9px 14px;
+  margin-bottom: 14px; font-size: .875rem;
+}
+.sb-icon { color: var(--orange); font-size: .85rem; flex-shrink: 0; }
+.sb-label { color: var(--navy); font-weight: 500; }
+.sb-label strong { font-weight: 700; }
+.sb-count { color: var(--muted); font-size: .8rem; }
+.sb-clear {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
+  color: var(--orange); font-weight: 700; font-size: .8rem;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1.5px solid rgba(240,123,63,.3);
+  white-space: nowrap; transition: background .15s;
+}
+.sb-clear:hover { background: rgba(240,123,63,.12); }
 {% endblock %}
 
 {% block content %}
+
+{% if query %}
+<div class="search-banner">
+  <i class="fas fa-search sb-icon"></i>
+  <span class="sb-label">Results for <strong>"{{ query }}"</strong></span>
+  <span class="sb-count">{{ paginator.count }} item{{ paginator.count|pluralize }}</span>
+  <a href="?campus={{ selected_campus }}{% if selected_category %}&c={{ selected_category }}{% endif %}&sort={{ sort_method }}" class="sb-clear">
+    <i class="fas fa-times"></i> Clear
+  </a>
+</div>
+{% endif %}
 
 <!-- Campus tabs with scroll affordance -->
 <div class="scroll-fade-wrap">
@@ -437,9 +466,9 @@
   </div>
   {% empty %}
   <div class="no-items">
-    <i class="fas fa-search"></i>
-    <h3>No items found</h3>
-    <p>{% if query %}No results for "{{ query }}"{% else %}Nothing listed here yet{% endif %}</p>
+    <i class="fas {% if query %}fa-search{% else %}fa-box-open{% endif %}"></i>
+    <h3>{% if query %}No results{% else %}Nothing here yet{% endif %}</h3>
+    <p>{% if query %}No items match "{{ query }}"{% else %}Be the first to list something here{% endif %}</p>
     <a href="{% url 'core:add_product' %}" class="btn-orange"><i class="fas fa-plus"></i> List an item</a>
   </div>
   {% endfor %}
@@ -648,6 +677,12 @@ function closeReactorsModal(event) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeReactorsModal(null);
 });
+
+// ── Auto-scroll active campus tab into view ───────────────────────────────────
+(function() {
+  var activeTab = document.querySelector('.campus-tab.active');
+  if (activeTab) activeTab.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+})();
 
 // ── 8-row grid adjustment ─────────────────────────────────────────────────────
 (function () {

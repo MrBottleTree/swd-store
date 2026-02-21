@@ -112,6 +112,18 @@
       font-size: .9rem; transition: color .15s;
     }
     .desktop-search button:hover { color: var(--orange); }
+    .desktop-search.has-query input {
+      border-color: var(--orange); background: #FFFAF7;
+      box-shadow: 0 0 0 3px rgba(240,123,63,.08);
+    }
+    .dsearch-clear {
+      position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: #bbb; cursor: pointer;
+      font-size: .72rem; width: 20px; height: 20px; border-radius: 50%;
+      align-items: center; justify-content: center;
+      transition: color .15s, background .15s; display: none;
+    }
+    .dsearch-clear:hover { color: var(--muted); background: rgba(0,0,0,.06); }
 
     /* Desktop nav links */
     .desktop-nav {
@@ -187,10 +199,18 @@
       width: 36px; height: 36px; border-radius: 50%;
       display: none; align-items: center; justify-content: center;
       cursor: pointer; color: var(--navy-light); font-size: 1rem;
-      transition: background .15s, transform .1s;
+      transition: background .15s, color .15s, transform .1s;
+      position: relative;
     }
     .mobile-search-icon:hover { background: rgba(245,244,241,.8); }
     .mobile-search-icon:active { transform: scale(0.9); }
+    .mobile-search-icon.search-active { color: var(--orange); }
+    .search-indicator {
+      position: absolute; top: 5px; right: 5px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--orange); border: 1.5px solid rgba(255,255,255,.9);
+      pointer-events: none;
+    }
 
     /* ── Mobile search overlay — SOLID ─────────── */
     #mobile-search-overlay {
@@ -462,8 +482,9 @@
     </form>
 
     <!-- Mobile search icon -->
-    <div class="mobile-search-icon" id="open-mobile-search" style="margin-left:auto">
+    <div class="mobile-search-icon {% if request.GET.q %}search-active{% endif %}" id="open-mobile-search" style="margin-left:auto">
       <i class="fas fa-search"></i>
+      {% if request.GET.q %}<span class="search-indicator"></span>{% endif %}
     </div>
 
     <!-- Desktop nav -->
@@ -582,8 +603,29 @@
   var close   = document.getElementById('close-mobile-search');
   var input   = document.getElementById('mobile-search-input');
   if (!open) return;
-  open.addEventListener('click',  function(){ overlay.classList.add('open'); input.focus(); });
+  open.addEventListener('click',  function(){ overlay.classList.add('open'); input.focus(); if (input.value) input.select(); });
   close.addEventListener('click', function(){ overlay.classList.remove('open'); });
+})();
+
+// ── Desktop search clear button ───────────────────────────────────────────────
+(function(){
+  var dSearch = document.querySelector('.desktop-search');
+  if (!dSearch) return;
+  var inp = dSearch.querySelector('input[name="q"]');
+  if (!inp) return;
+  var cb = document.createElement('button');
+  cb.type = 'button'; cb.className = 'dsearch-clear'; cb.title = 'Clear search';
+  cb.innerHTML = '<i class="fas fa-times"></i>';
+  dSearch.appendChild(cb);
+  function sync() {
+    var has = !!inp.value.trim();
+    cb.style.display = has ? 'flex' : 'none';
+    inp.style.paddingRight = has ? '58px' : '';
+    dSearch.classList.toggle('has-query', has);
+  }
+  cb.addEventListener('click', function(){ inp.value = ''; sync(); dSearch.submit(); });
+  inp.addEventListener('input', sync);
+  sync();
 })();
 
 // ── Toasts ────────────────────────────────────────────────────────────────────
