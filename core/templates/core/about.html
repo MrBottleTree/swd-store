@@ -9,68 +9,81 @@
 
 /* App header */
 .about-app-hdr {
-  text-align: center; margin-bottom: 24px;
+  text-align: center; margin-bottom: 20px;
 }
 .about-app-hdr h1 {
   font-size: 1.6rem; font-weight: 800; color: var(--navy); letter-spacing: -.5px;
   margin-bottom: 4px;
 }
 .about-app-hdr p {
-  font-size: .9rem; color: var(--muted);
+  font-size: .875rem; color: var(--muted);
 }
 
-/* Glass card */
+/* Card */
 .about-card {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  box-shadow: var(--glass-shadow);
+  box-shadow: 0 4px 24px rgba(0,0,0,.07), 0 0 0 1px rgba(255,255,255,.55);
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 /* Developer section */
 .dev-section {
   display: flex; align-items: center; gap: 16px;
-  padding: 20px;
+  padding: 20px 20px 18px;
 }
 .dev-avatar {
-  width: 68px; height: 68px; border-radius: 50%;
+  width: 72px; height: 72px; border-radius: 50%;
   object-fit: cover; flex-shrink: 0;
-  border: 3px solid var(--glass-border);
-  box-shadow: 0 4px 14px rgba(0,0,0,.1);
+  border: 3px solid rgba(255,255,255,.7);
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
 }
 .dev-info { flex: 1; min-width: 0; }
 .dev-name {
-  font-size: 1rem; font-weight: 800; color: var(--navy); margin-bottom: 2px;
+  font-size: 1.05rem; font-weight: 800; color: var(--navy); margin-bottom: 2px;
 }
 .dev-role {
-  font-size: .8rem; color: var(--muted); font-weight: 500;
+  font-size: .8rem; color: var(--muted); font-weight: 500; margin-bottom: 6px;
 }
-.dev-campus {
+.dev-tags {
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+.dev-tag {
   display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 6px; font-size: .75rem; font-weight: 600;
-  color: var(--orange); background: var(--orange-light);
+  font-size: .73rem; font-weight: 600;
   padding: 3px 9px; border-radius: 50px;
+}
+.dev-tag-campus {
+  color: var(--orange); background: var(--orange-light);
+}
+.dev-tag-email {
+  color: var(--navy-light); background: rgba(30,45,74,.07);
+  text-decoration: none; transition: background .15s;
+}
+.dev-tag-email:hover { background: rgba(30,45,74,.13); }
+.dev-tag i { font-size: .7rem; }
+
+/* Divider */
+.about-divider {
+  border: none; border-top: 1px solid rgba(232,230,225,.8); margin: 0;
 }
 
 /* Info rows */
 .about-info-list {
-  padding: 0 20px 20px;
-  display: flex; flex-direction: column; gap: 10px;
+  padding: 16px 20px 20px;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .about-info-item {
   display: flex; align-items: flex-start; gap: 12px;
   font-size: .875rem; color: var(--muted); line-height: 1.55;
 }
 .about-info-item i {
-  color: var(--orange); font-size: .9rem; margin-top: 2px; flex-shrink: 0; width: 16px; text-align: center;
-}
-
-.about-divider {
-  border: none; border-top: 1px solid rgba(232,230,225,.7); margin: 0;
+  color: var(--orange); font-size: .875rem; margin-top: 2px;
+  flex-shrink: 0; width: 16px; text-align: center;
 }
 
 /* CTA buttons */
@@ -81,20 +94,21 @@
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--orange); color: #fff;
   padding: 11px 16px; border-radius: var(--radius-sm);
-  font-weight: 700; font-size: .875rem; transition: background .15s;
+  font-weight: 700; font-size: .875rem;
+  transition: background .15s, transform .1s;
 }
-.about-btn-primary:hover { background: var(--orange-dark); }
+.about-btn-primary:hover  { background: var(--orange-dark); }
+.about-btn-primary:active { transform: scale(0.97); }
 .about-btn-secondary {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--navy-light);
+  background: var(--card); color: var(--navy-light);
   padding: 11px 16px; border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
-  font-weight: 600; font-size: .875rem; transition: background .15s;
+  font-weight: 600; font-size: .875rem;
+  transition: background .15s, transform .1s;
 }
-.about-btn-secondary:hover { background: rgba(232,230,225,.6); }
+.about-btn-secondary:hover  { background: var(--bg); }
+.about-btn-secondary:active { transform: scale(0.97); }
 {% endblock %}
 
 {% block content %}
@@ -112,7 +126,14 @@
       <div class="dev-info">
         <div class="dev-name">Vishrut</div>
         <div class="dev-role">Design &amp; Development</div>
-        <span class="dev-campus"><i class="fas fa-map-marker-alt"></i> BITS Pilani, Goa</span>
+        <div class="dev-tags">
+          <span class="dev-tag dev-tag-campus">
+            <i class="fas fa-map-marker-alt"></i> BITS Pilani, Goa
+          </span>
+          <a href="mailto:vishrut172@gmail.com" class="dev-tag dev-tag-email">
+            <i class="fas fa-envelope"></i> vishrut172@gmail.com
+          </a>
+        </div>
       </div>
     </div>
 
