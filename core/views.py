@@ -1,6 +1,7 @@
 import json
 import os
 import secrets
+import requests
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse
