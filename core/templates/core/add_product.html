@@ -22,9 +22,9 @@
 .photos-label span { font-weight: 400; color: var(--muted); text-transform: none; letter-spacing: 0; }
 
 .photo-slots {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;
 }
-@media (max-width: 420px) { .photo-slots { gap: 5px; } }
+@media (min-width: 480px) { .photo-slots { grid-template-columns: repeat(5, 1fr); } }
 
 .photo-slot {
   position: relative; padding-bottom: 100%;
@@ -44,9 +44,9 @@
 .photo-slot-ph i { font-size: 1.2rem; }
 .photo-slot-del {
   position: absolute; top: 4px; right: 4px;
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   background: rgba(0,0,0,.6); color: #fff;
-  border: none; cursor: pointer; font-size: .7rem;
+  border: none; cursor: pointer; font-size: .8rem;
   display: flex; align-items: center; justify-content: center;
   transition: background .15s;
 }
@@ -142,6 +142,9 @@
   font-weight: 600; transition: background .15s;
 }
 .btn-cancel:hover { background: var(--border); }
+.btn-publish:disabled {
+  background: #ccc; cursor: not-allowed; transform: none;
+}
 {% endblock %}
 
 {% block content %}
@@ -192,7 +195,7 @@
             Price <span class="req">*</span>
           </label>
           <div class="price-wrap">
-            <span class="price-prefix">₹</span>
+            <span class="price-prefix">{% if user and user.campus == 'DUB' %}AED{% else %}₹{% endif %}</span>
             {{ field }}
           </div>
           {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
@@ -239,7 +242,7 @@
     </div>
 
     <div class="submit-row">
-      <button type="submit" class="btn-publish">
+      <button type="submit" class="btn-publish" data-loading-text="{% if item %}Saving…{% else %}Publishing…{% endif %}">
         <i class="fas {% if item %}fa-save{% else %}fa-paper-plane{% endif %}" style="margin-right:6px"></i>
         {% if item %}Save Changes{% else %}Publish Listing{% endif %}
       </button>
@@ -368,5 +371,15 @@ function updateUploadHint(total) {
 
 // Init
 syncState();
+
+// Prevent double-submit: disable button on form submit
+document.getElementById('listing-form').addEventListener('submit', function() {
+  var btn = this.querySelector('.btn-publish');
+  if (btn && !btn.disabled) {
+    btn.disabled = true;
+    var loadingText = btn.dataset.loadingText || 'Saving…';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>' + loadingText;
+  }
+});
 </script>
 {% endblock %}

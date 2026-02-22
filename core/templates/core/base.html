@@ -170,7 +170,7 @@
     /* Profile pic */
     .profile-wrap { position: relative; }
     .profile-pic {
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       background: var(--navy); color: #fff;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; font-size: .85rem; overflow: hidden;
@@ -215,7 +215,7 @@
 
     /* Mobile search icon */
     .mobile-search-icon {
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       display: none; align-items: center; justify-content: center;
       cursor: pointer; color: var(--navy-light); font-size: 1rem;
       transition: background .15s, color .15s, transform .1s;
@@ -624,6 +624,11 @@
   if (!open) return;
   open.addEventListener('click',  function(){ overlay.classList.add('open'); input.focus(); if (input.value) input.select(); });
   close.addEventListener('click', function(){ overlay.classList.remove('open'); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      overlay.classList.remove('open');
+    }
+  });
 })();
 
 // ── Desktop search clear button ───────────────────────────────────────────────
