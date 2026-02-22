@@ -55,14 +55,23 @@
 
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: #F5F4F1;
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed gradient blobs as a separate compositor layer — no scroll repaint */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
       background:
         radial-gradient(ellipse 90% 70% at 5% 90%, rgba(240,123,63,.10) 0%, transparent 65%),
         radial-gradient(ellipse 70% 50% at 95% 5%,  rgba(30,45,74,.08)  0%, transparent 65%),
         #F5F4F1;
-      background-attachment: fixed;
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
+      pointer-events: none;
     }
 
     a { color: inherit; text-decoration: none; }
