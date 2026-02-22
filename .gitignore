@@ -18,3 +18,4 @@ media/
 data.json
 db.sqlite3
 clean_data.json
+*.skill

@@ -1,89 +1,169 @@
 {% extends "core/base.html" %}
-{% block title %}About — SWD Store{% endblock %}
+{% load static %}
+{% block title %}About · BITS Pilani Store{% endblock %}
 
 {% block extra_css %}
-.content-wrap { max-width: 640px; margin: 0 auto; }
-.page-title { font-size: 1.4rem; font-weight: 800; color: var(--navy); margin-bottom: 20px; }
-
-.content-card {
-  background: var(--card); border-radius: var(--radius);
-  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
-  padding: 28px;
-}
-.content-card section { margin-bottom: 24px; }
-.content-card section:last-of-type { margin-bottom: 0; }
-.content-card h2 {
-  font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px;
-}
-.content-card p, .content-card li {
-  font-size: .9rem; color: var(--muted); line-height: 1.7;
-}
-.content-card ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.content-card li { display: flex; align-items: center; gap: 10px; }
-.content-card li::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--orange); flex-shrink: 0;
+.about-wrap {
+  max-width: 480px; margin: 0 auto;
 }
 
-.content-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+/* App header */
+.about-app-hdr {
+  text-align: center; margin-bottom: 20px;
+}
+.about-app-hdr h1 {
+  font-size: 1.6rem; font-weight: 800; color: var(--navy); letter-spacing: -.5px;
+  margin-bottom: 4px;
+}
+.about-app-hdr p {
+  font-size: .875rem; color: var(--muted);
+}
 
-.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 6px;
+/* Card */
+.about-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px rgba(0,0,0,.07), 0 0 0 1px rgba(255,255,255,.55);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* Developer section */
+.dev-section {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 20px 18px;
+}
+.dev-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 3px solid rgba(255,255,255,.7);
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+}
+.dev-info { flex: 1; min-width: 0; }
+.dev-name {
+  font-size: 1.05rem; font-weight: 800; color: var(--navy); margin-bottom: 2px;
+}
+.dev-role {
+  font-size: .8rem; color: var(--muted); font-weight: 500; margin-bottom: 6px;
+}
+.dev-tags {
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+.dev-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .73rem; font-weight: 600;
+  padding: 3px 9px; border-radius: 50px;
+}
+.dev-tag-campus {
+  color: var(--orange); background: var(--orange-light);
+}
+.dev-tag-email {
+  color: var(--navy-light); background: rgba(30,45,74,.07);
+  text-decoration: none; transition: background .15s;
+}
+.dev-tag-email:hover { background: rgba(30,45,74,.13); }
+.dev-tag i { font-size: .7rem; }
+
+/* Divider */
+.about-divider {
+  border: none; border-top: 1px solid rgba(232,230,225,.8); margin: 0;
+}
+
+/* Info rows */
+.about-info-list {
+  padding: 16px 20px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.about-info-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: .875rem; color: var(--muted); line-height: 1.55;
+}
+.about-info-item i {
+  color: var(--orange); font-size: .875rem; margin-top: 2px;
+  flex-shrink: 0; width: 16px; text-align: center;
+}
+
+/* CTA buttons */
+.about-actions {
+  display: flex; gap: 10px;
+}
+.about-btn-primary {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--orange); color: #fff;
-  padding: 10px 22px; border-radius: var(--radius-sm);
-  font-weight: 700; font-size: .875rem; transition: background .15s;
+  padding: 11px 16px; border-radius: var(--radius-sm);
+  font-weight: 700; font-size: .875rem;
+  transition: background .15s, transform .1s;
 }
-.btn-primary:hover { background: var(--orange-dark); }
-.btn-secondary {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--bg); color: var(--navy-light);
-  padding: 10px 22px; border-radius: var(--radius-sm);
+.about-btn-primary:hover  { background: var(--orange-dark); }
+.about-btn-primary:active { transform: scale(0.97); }
+.about-btn-secondary {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: var(--card); color: var(--navy-light);
+  padding: 11px 16px; border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
-  font-weight: 600; font-size: .875rem; transition: background .15s;
+  font-weight: 600; font-size: .875rem;
+  transition: background .15s, transform .1s;
 }
-.btn-secondary:hover { background: var(--border); }
+.about-btn-secondary:hover  { background: var(--bg); }
+.about-btn-secondary:active { transform: scale(0.97); }
 {% endblock %}
 
 {% block content %}
-<div class="content-wrap">
-  <h1 class="page-title">About SWD Store</h1>
+<div class="about-wrap">
 
-  <div class="content-card">
-    <section>
-      <h2>What is SWD Store?</h2>
-      <p>SWD Store is a student-run marketplace for BITS Pilani campuses — Goa, Hyderabad, Pilani, and Dubai.
-         It lets students buy and sell second-hand items easily within their campus community,
-         replacing the older pawnshop platform with a cleaner, faster experience.</p>
-    </section>
+  <div class="about-app-hdr">
+    <h1>BITS Pilani Store</h1>
+    <p>Student marketplace for BITS Pilani campuses</p>
+  </div>
 
-    <section>
-      <h2>Built by</h2>
-      <p>SWD Store was designed and built by <strong style="color:var(--navy)">Vishrut</strong>,
-         a student at BITS Pilani Goa Campus.
-         The goal was to create a permanent, well-maintained platform that the student community can rely on.</p>
-    </section>
+  <!-- Developer card -->
+  <div class="about-card">
+    <div class="dev-section">
+      <img class="dev-avatar" src="{% static 'images/vishrut.png' %}" alt="Vishrut">
+      <div class="dev-info">
+        <div class="dev-name">Vishrut</div>
+        <div class="dev-role">Design &amp; Development</div>
+        <div class="dev-tags">
+          <span class="dev-tag dev-tag-campus">
+            <i class="fas fa-map-marker-alt"></i> BITS Pilani, Goa
+          </span>
+          <a href="mailto:vishrut172@gmail.com" class="dev-tag dev-tag-email">
+            <i class="fas fa-envelope"></i> vishrut172@gmail.com
+          </a>
+        </div>
+      </div>
+    </div>
 
-    <section>
-      <h2>How it works</h2>
-      <ul>
-        <li>Sign in with your BITS Google account</li>
-        <li>Browse listings filtered to your campus by default</li>
-        <li>List items for sale with photos and a price</li>
-        <li>Connect with buyers directly over WhatsApp</li>
-      </ul>
-    </section>
+    <hr class="about-divider">
 
-    <hr class="content-divider">
-
-    <div class="btn-row">
-      <a href="{% url 'core:feedback' %}" class="btn-primary">
-        <i class="fas fa-comment-dots"></i> Send Feedback
-      </a>
-      <a href="{% url 'core:home' %}" class="btn-secondary">
-        <i class="fas fa-home"></i> Browse Listings
-      </a>
+    <div class="about-info-list">
+      <div class="about-info-item">
+        <i class="fas fa-store"></i>
+        <span>Buy and sell second-hand items within your campus. Replaces the older pawnshop platform.</span>
+      </div>
+      <div class="about-info-item">
+        <i class="fas fa-university"></i>
+        <span>Covers all four campuses: Goa, Hyderabad, Pilani, and Dubai.</span>
+      </div>
+      <div class="about-info-item">
+        <i class="fab fa-whatsapp"></i>
+        <span>Buyers contact sellers directly over WhatsApp. No middleman involved.</span>
+      </div>
     </div>
   </div>
+
+  <!-- CTA -->
+  <div class="about-actions">
+    <a href="{% url 'core:feedback' %}" class="about-btn-primary">
+      <i class="fas fa-comment-dots"></i> Feedback
+    </a>
+    <a href="{% url 'core:home' %}" class="about-btn-secondary">
+      <i class="fas fa-home"></i> Browse
+    </a>
+  </div>
+
 </div>
 {% endblock %}
