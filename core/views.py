@@ -181,7 +181,7 @@ def home(request):
     sort_method = request.GET.get('sort', '0')
     selected_campus = request.GET.get('campus')
 
-    items_query = Item.objects.select_related('seller', 'category', 'hostel').prefetch_related('images')
+    items_query = Item.objects.filter(is_deleted=False).select_related('seller', 'category', 'hostel').prefetch_related('images')
 
     # Campus filtering
     if selected_campus == 'ALL':
@@ -214,7 +214,7 @@ def home(request):
     categories = Category.objects.all()
     categories_with_counts = []
     for cat in categories:
-        cat_items = Item.objects.filter(category=cat)
+        cat_items = Item.objects.filter(category=cat, is_deleted=False)
         if campus_filter:
             cat_items = cat_items.filter(seller__campus=campus_filter)
         categories_with_counts.append({
@@ -301,10 +301,10 @@ def item_detail(request, id):
     if not current_user:
         return redirect('core:sign_in')
 
-    item = get_object_or_404(Item, id=id)
+    item = get_object_or_404(Item, id=id, is_deleted=False)
     similar_items = (
         Item.objects
-        .filter(category=item.category)
+        .filter(category=item.category, is_deleted=False)
         .exclude(id=item.id)
         .select_related('seller', 'hostel')
         .prefetch_related('images')
@@ -393,7 +393,7 @@ def edit_item(request, id):
     if not person:
         return redirect('core:sign_in')
 
-    item = get_object_or_404(Item, id=id)
+    item = get_object_or_404(Item, id=id, is_deleted=False)
     if item.seller != person:
         messages.error(request, 'You can only edit your own items.')
         return redirect('core:home')
@@ -471,12 +471,9 @@ def delete_item(request, id):
     if not person:
         return redirect('core:sign_in')
 
-    item = get_object_or_404(Item, id=id)
+    item = get_object_or_404(Item, id=id, is_deleted=False)
     if item.seller == person:
-        for image in item.images.all():
-            image.image.delete(save=False)
-            image.delete()
-        item.delete()
+        Item.objects.filter(pk=item.pk).update(is_deleted=True)
     return redirect('core:my_listings')
 
 
@@ -487,7 +484,7 @@ def my_listings(request):
         return redirect('core:sign_in')
 
     listings = helper.items_sort(
-        Item.objects.filter(seller=person).select_related('category', 'hostel').prefetch_related('images')
+        Item.objects.filter(seller=person, is_deleted=False).select_related('category', 'hostel').prefetch_related('images')
     )
     return render(request, 'core/my_listings.html', {'listings': listings, 'user': person})
 
@@ -501,7 +498,7 @@ def mark_sold(request, id):
     if not person:
         return redirect('core:sign_in')
 
-    item = get_object_or_404(Item, id=id, seller=person)
+    item = get_object_or_404(Item, id=id, seller=person, is_deleted=False)
     item.is_sold = True
     item.save()
     return redirect('core:my_listings')
@@ -516,7 +513,7 @@ def repost(request, id):
     if not person:
         return redirect('core:sign_in')
 
-    item = get_object_or_404(Item, id=id)
+    item = get_object_or_404(Item, id=id, is_deleted=False)
     if item.seller != person:
         messages.error(request, 'You can only repost your own items.')
         return redirect('core:home')
@@ -543,7 +540,7 @@ def bulk_action(request, action):
         return redirect('core:my_listings')
 
     selected_ids = request.POST.get('selected_items', '').split(',')
-    items = Item.objects.filter(id__in=selected_ids, seller=person)
+    items = Item.objects.filter(id__in=selected_ids, seller=person, is_deleted=False)
 
     if not items.exists():
         messages.error(request, 'No valid items were selected.')
@@ -565,13 +562,7 @@ def bulk_action(request, action):
             count += 1
         messages.success(request, f'Successfully toggled sold status for {count} item(s).')
     elif action == 'delete':
-        count = 0
-        for item in items:
-            for image in item.images.all():
-                image.image.delete(save=False)
-                image.delete()
-            item.delete()
-            count += 1
+        count = items.update(is_deleted=True)
         messages.success(request, f'Successfully deleted {count} item(s).')
 
     return redirect('core:my_listings')
@@ -650,7 +641,7 @@ def react_item(request, item_id):
     if not person:
         return JsonResponse({'error': 'Not authenticated'}, status=401)
 
-    item = get_object_or_404(Item, id=item_id)
+    item = get_object_or_404(Item, id=item_id, is_deleted=False)
 
     # GET: return reactor data without reacting
     if request.method == 'GET':

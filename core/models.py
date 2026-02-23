@@ -71,6 +71,7 @@ class Item(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     seller = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='items', null=False)
     is_sold = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
     whatsapp = models.URLField(max_length=500, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='items', null=False)
     added_at = models.DateTimeField(auto_now_add=True)
