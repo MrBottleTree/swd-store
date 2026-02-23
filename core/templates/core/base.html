@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}BITS Pilani Store{% endblock %}</title>
+  <!-- Theme init: runs before CSS to prevent flash of wrong theme -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 
   <!-- SEO & social preview (WhatsApp, Telegram, Discord, iMessage…) -->
   <meta name="description" content="{% block meta_description %}Buy and sell second-hand items within your BITS Pilani campus. Available across Goa, Hyderabad, Pilani, and Dubai campuses.{% endblock %}">
@@ -26,40 +28,76 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
+    /* ── Brand & layout — invariant ─────────────── */
     :root {
-      --orange:       #F07B3F;
-      --orange-dark:  #D96A2E;
-      --orange-light: #FEF0E7;
-      --navy:         #1E2D4A;
-      --navy-light:   #2D4059;
-      --bg:           #F5F4F1;
-      --card:         #FFFFFF;
-      --border:       #E8E6E1;
-      --text:         #1A1A1A;
-      --muted:        #6B6867;
-      --green:        #27AE60;
-      --red:          #E74C3C;
-      --shadow-sm:    0 1px 4px rgba(0,0,0,.06);
-      --shadow:       0 2px 10px rgba(0,0,0,.08);
-      --shadow-lg:    0 8px 24px rgba(0,0,0,.12);
-      --radius:       14px;
-      --radius-sm:    8px;
+      --orange:      #F07B3F;
+      --orange-dark: #D96A2E;
+      --green:       #27AE60;
+      --red:         #E74C3C;
+      --radius:      14px;
+      --radius-sm:   8px;
+      --glass-blur:  blur(18px) saturate(1.6);
+    }
 
-      /* Glass — used on structural chrome only (header, mobile nav) */
-      --glass-bg:     rgba(255, 255, 255, 0.78);
-      --glass-border: rgba(255, 255, 255, 0.60);
-      --glass-blur:   blur(18px) saturate(1.6);
+    /* ── Dark theme (default) ────────────────────── */
+    :root, [data-theme="dark"] {
+      color-scheme: dark;
+      --orange-light:       rgba(240,123,63,.16);
+      --navy:               #1E2D4A;
+      --navy-light:         #6A90C4;
+      --bg:                 #0B1120;
+      --card:               #131C30;
+      --border:             rgba(255,255,255,0.09);
+      --text:               #E8E3DC;
+      --muted:              #7A7A8C;
+      --shadow-sm:          0 1px 4px rgba(0,0,0,.35);
+      --shadow:             0 2px 10px rgba(0,0,0,.45);
+      --shadow-lg:          0 8px 24px rgba(0,0,0,.60);
+      --glass-bg:           rgba(11,17,32,0.86);
+      --glass-border:       rgba(255,255,255,0.07);
+      --blob-orange:        rgba(240,123,63,.06);
+      --blob-navy:          rgba(60,90,160,.22);
+      --input-bg:           rgba(19,28,48,0.90);
+      --search-active-bg:   rgba(240,123,63,.08);
+      --hover-bg:           rgba(255,255,255,0.05);
+      --scrollbar-thumb:    #283048;
+    }
+
+    /* ── Light theme ─────────────────────────────── */
+    [data-theme="light"] {
+      color-scheme: light;
+      --orange-light:       #FEF0E7;
+      --navy:               #1E2D4A;
+      --navy-light:         #2D4059;
+      --bg:                 #F5F4F1;
+      --card:               #FFFFFF;
+      --border:             #E8E6E1;
+      --text:               #1A1A1A;
+      --muted:              #6B6867;
+      --shadow-sm:          0 1px 4px rgba(0,0,0,.06);
+      --shadow:             0 2px 10px rgba(0,0,0,.08);
+      --shadow-lg:          0 8px 24px rgba(0,0,0,.12);
+      --glass-bg:           rgba(255,255,255,0.78);
+      --glass-border:       rgba(255,255,255,0.60);
+      --blob-orange:        rgba(240,123,63,.10);
+      --blob-navy:          rgba(30,45,74,.08);
+      --input-bg:           rgba(245,244,241,0.70);
+      --search-active-bg:   #FFFAF7;
+      --hover-bg:           rgba(245,244,241,0.80);
+      --scrollbar-thumb:    #ccc;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      background: #F5F4F1;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
+    /* Ensure form elements inherit theme text color */
+    input, textarea, select { color: inherit; }
 
     /* Fixed gradient blobs as a separate compositor layer — no scroll repaint */
     body::before {
@@ -68,9 +106,9 @@
       inset: 0;
       z-index: -1;
       background:
-        radial-gradient(ellipse 90% 70% at 5% 90%, rgba(240,123,63,.10) 0%, transparent 65%),
-        radial-gradient(ellipse 70% 50% at 95% 5%,  rgba(30,45,74,.08)  0%, transparent 65%),
-        #F5F4F1;
+        radial-gradient(ellipse 90% 70% at 5% 90%, var(--blob-orange) 0%, transparent 65%),
+        radial-gradient(ellipse 70% 50% at 95% 5%, var(--blob-navy)   0%, transparent 65%),
+        var(--bg);
       pointer-events: none;
     }
 
@@ -117,7 +155,7 @@
       width: 100%; padding: 9px 38px 9px 14px;
       border: 1.5px solid var(--border); border-radius: var(--radius-sm);
       font-family: inherit; font-size: .9rem;
-      background: rgba(245,244,241,.7); color: var(--text);
+      background: var(--input-bg); color: var(--text);
       transition: border-color .2s, background .2s, box-shadow .2s;
     }
     .desktop-search input:focus {
@@ -132,7 +170,7 @@
     }
     .desktop-search button:hover { color: var(--orange); }
     .desktop-search.has-query input {
-      border-color: var(--orange); background: #FFFAF7;
+      border-color: var(--orange); background: var(--search-active-bg);
       box-shadow: 0 0 0 3px rgba(240,123,63,.08);
     }
     .dsearch-clear {
@@ -154,7 +192,7 @@
       font-size: .875rem; font-weight: 500; color: var(--navy-light);
       transition: background .15s, color .15s, transform .1s;
     }
-    .desktop-nav a:hover { background: rgba(245,244,241,.8); color: var(--orange); }
+    .desktop-nav a:hover { background: var(--hover-bg); color: var(--orange); }
     .desktop-nav a:active { transform: scale(0.96); }
 
     .sell-btn-desktop {
@@ -221,7 +259,7 @@
       transition: background .15s, color .15s, transform .1s;
       position: relative;
     }
-    .mobile-search-icon:hover { background: rgba(245,244,241,.8); }
+    .mobile-search-icon:hover { background: var(--hover-bg); }
     .mobile-search-icon:active { transform: scale(0.9); }
     .mobile-search-icon.search-active { color: var(--orange); }
     .search-indicator {
@@ -431,7 +469,44 @@
     /* ── Scrollbar ──────────────────────────────── */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+    /* ── Theme transition (applied briefly on toggle) ── */
+    .theme-transitioning *,
+    .theme-transitioning *::before,
+    .theme-transitioning *::after {
+      transition:
+        background-color .25s ease,
+        border-color .25s ease,
+        color .25s ease,
+        box-shadow .25s ease !important;
+    }
+
+    /* ── Theme toggle button ─────────────────────── */
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+      transition: color .2s, border-color .2s, background .2s,
+                  transform .2s cubic-bezier(.34,1.5,.64,1);
+    }
+    .theme-toggle:hover {
+      color: var(--orange);
+      border-color: var(--orange);
+      background: var(--orange-light);
+      transform: scale(1.12) rotate(22deg);
+    }
+    .theme-toggle:active { transform: scale(0.88) !important; transition-duration: .07s !important; }
+    @keyframes iconSpin {
+      from { transform: rotate(-180deg) scale(0.5); opacity: 0; }
+      to   { transform: rotate(0deg) scale(1); opacity: 1; }
+    }
+    .theme-toggle i { display: inline-block; }
+    .theme-toggle i.icon-spin { animation: iconSpin .3s cubic-bezier(.34,1.3,.64,1); }
 
     /* ── Responsive ─────────────────────────────── */
     @media (max-width: 768px) {
@@ -512,6 +587,11 @@
       <a href="{% url 'core:categories' %}"><i class="fas fa-th-large"></i> Categories</a>
       <a href="{% url 'core:add_product' %}" class="sell-btn-desktop"><i class="fas fa-plus"></i> Sell</a>
     </nav>
+
+    <!-- Theme toggle -->
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme">
+      <i id="theme-icon" class="fas fa-sun"></i>
+    </button>
 
     <!-- Profile -->
     {% if user %}
@@ -761,6 +841,37 @@ var QR = {
     if (QR._el) QR._el.classList.add('qr-hidden');
   }
 };
+</script>
+
+<script>
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+(function(){
+  var btn  = document.getElementById('theme-toggle');
+  var icon = document.getElementById('theme-icon');
+  if (!btn) return;
+
+  function syncIcon(theme, animate) {
+    var cls = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    if (animate) {
+      icon.className = cls + ' icon-spin';
+      icon.addEventListener('animationend', function(){ icon.classList.remove('icon-spin'); }, { once: true });
+    } else {
+      icon.className = cls;
+    }
+  }
+
+  // Sync icon with the theme already applied by the init script
+  syncIcon(document.documentElement.getAttribute('data-theme') || 'dark', false);
+
+  btn.addEventListener('click', function(){
+    var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.classList.add('theme-transitioning');
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    syncIcon(next, true);
+    setTimeout(function(){ document.documentElement.classList.remove('theme-transitioning'); }, 300);
+  });
+})();
 </script>
 
 {% block extra_js %}{% endblock %}
