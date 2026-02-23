@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BITS Pilani Store</title>
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
   <meta name="description" content="Buy and sell second-hand items within your BITS Pilani campus. Available across Goa, Hyderabad, Pilani, and Dubai campuses.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BITS Pilani Store">
@@ -17,21 +18,43 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root, [data-theme="dark"] {
+      color-scheme: dark;
+      --bg:      #0B1120;
+      --card:    #131C30;
+      --border:  rgba(255,255,255,0.10);
+      --text:    #E8E3DC;
+      --muted:   #7A7A8C;
+      --orange:  #F07B3F;
+    }
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg:      #F5F4F1;
+      --card:    #FFFFFF;
+      --border:  #E8E6E1;
+      --text:    #1A1A1A;
+      --muted:   #6B6867;
+      --orange:  #F07B3F;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       min-height: 100vh;
-      background: #F5F4F1;
+      background: var(--bg);
+      color: var(--text);
       display: flex; align-items: center; justify-content: center;
       padding: 24px 16px;
       -webkit-font-smoothing: antialiased;
+      transition: background .25s, color .25s;
     }
     a { color: inherit; text-decoration: none; }
 
     .card {
-      background: #fff;
+      background: var(--card);
       border-radius: 20px;
-      box-shadow: 0 4px 32px rgba(0,0,0,.10);
+      box-shadow: 0 4px 32px rgba(0,0,0,.25);
+      border: 1px solid var(--border);
       padding: 44px 40px;
       width: 100%; max-width: 400px;
       text-align: center;
@@ -39,19 +62,19 @@
 
     .logo {
       font-size: 2rem; font-weight: 800;
-      color: #F07B3F; letter-spacing: -1px;
+      color: var(--orange); letter-spacing: -1px;
       margin-bottom: 6px;
     }
     .tagline {
       font-size: .82rem; font-weight: 600;
-      color: #6B6867; letter-spacing: .5px;
+      color: var(--muted); letter-spacing: .5px;
       text-transform: uppercase; margin-bottom: 28px;
     }
 
-    .divider { border: none; border-top: 1px solid #E8E6E1; margin: 28px 0; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
 
     .subtitle {
-      font-size: .875rem; color: #6B6867; line-height: 1.6;
+      font-size: .875rem; color: var(--muted); line-height: 1.6;
       margin-bottom: 24px;
     }
 
@@ -62,36 +85,36 @@
     .google-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
       width: 100%; padding: 11px 16px;
-      border: 1.5px solid #dadce0; border-radius: 8px;
-      background: #fff; color: #3c4043;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: var(--card); color: var(--text);
       font-size: .9rem; font-weight: 600; font-family: inherit;
       cursor: pointer; transition: background .15s, box-shadow .15s;
       text-decoration: none;
     }
-    .google-btn:hover { background: #f8f9fa; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+    .google-btn:hover { opacity: .85; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
     .google-btn svg { flex-shrink: 0; }
 
     .terms-note {
-      font-size: .75rem; color: #aaa; margin-top: 20px;
+      font-size: .75rem; color: var(--muted); margin-top: 20px;
     }
-    .terms-note a { color: #F07B3F; }
+    .terms-note a { color: var(--orange); }
     .terms-note a:hover { text-decoration: underline; }
 
     .debug-wrap {
       margin-top: 24px; padding-top: 20px;
-      border-top: 1px solid #E8E6E1;
+      border-top: 1px solid var(--border);
     }
     .debug-btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       width: 100%; padding: 10px 16px;
-      border: 1.5px solid #FCD34D;
-      background: #FFFBEB; border-radius: 10px;
-      color: #92400E; font-size: .85rem; font-weight: 600;
+      border: 1.5px solid rgba(252,211,77,.4);
+      background: rgba(252,211,77,.08); border-radius: 10px;
+      color: #F59E0B; font-size: .85rem; font-weight: 600;
       cursor: pointer; transition: background .15s;
     }
-    .debug-btn:hover { background: #FEF3C7; }
+    .debug-btn:hover { background: rgba(252,211,77,.15); }
     .debug-badge {
-      background: #FDE68A; color: #78350F;
+      background: rgba(252,211,77,.2); color: #F59E0B;
       font-size: .7rem; font-weight: 800;
       padding: 2px 6px; border-radius: 4px;
     }
@@ -100,8 +123,13 @@
       font-size: .85rem; font-weight: 500; margin-bottom: 18px;
       text-align: left;
     }
-    .alert-error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
-    .alert-success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+    .alert-error { background: rgba(185,28,28,.12); color: #f87171; border: 1px solid rgba(185,28,28,.25); }
+    .alert-success { background: rgba(22,101,52,.12); color: #4ade80; border: 1px solid rgba(22,101,52,.25); }
+    [data-theme="light"] .alert-error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    [data-theme="light"] .alert-success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+    [data-theme="light"] .debug-btn { background: #FFFBEB; border-color: #FCD34D; color: #92400E; }
+    [data-theme="light"] .debug-btn:hover { background: #FEF3C7; }
+    [data-theme="light"] .debug-badge { background: #FDE68A; color: #78350F; }
   </style>
 </head>
 <body>
