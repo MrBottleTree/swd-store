@@ -37,36 +37,39 @@
       --radius:      14px;
       --radius-sm:   8px;
       --glass-blur:  blur(18px) saturate(1.6);
+      /* Navy blue used as SURFACE/BACKGROUND color (avatars, active pills, bulk bar) */
+      --navy-bg:     #1E2D4A;
     }
 
     /* ── Dark theme (default) ────────────────────── */
     :root, [data-theme="dark"] {
       color-scheme: dark;
-      --orange-light:       rgba(240,123,63,.16);
-      --navy:               #1E2D4A;
-      --navy-light:         #6A90C4;
-      --bg:                 #0B1120;
-      --card:               #131C30;
+      --orange-light:       rgba(240,123,63,.18);
+      /* --navy used as TEXT/HEADING color — must be LIGHT in dark mode */
+      --navy:               #E0DBD4;
+      --navy-light:         #9AB8D4;
+      --bg:                 #080D1B;
+      --card:               #0C1527;
       --border:             rgba(255,255,255,0.09);
-      --text:               #E8E3DC;
-      --muted:              #7A7A8C;
-      --shadow-sm:          0 1px 4px rgba(0,0,0,.35);
-      --shadow:             0 2px 10px rgba(0,0,0,.45);
-      --shadow-lg:          0 8px 24px rgba(0,0,0,.60);
-      --glass-bg:           rgba(11,17,32,0.86);
+      --text:               #C8C3BC;
+      --muted:              #6E7A8E;
+      --shadow-sm:          0 1px 4px rgba(0,0,0,.45);
+      --shadow:             0 2px 10px rgba(0,0,0,.55);
+      --shadow-lg:          0 8px 32px rgba(0,0,0,.70);
+      --glass-bg:           rgba(8,13,27,0.88);
       --glass-border:       rgba(255,255,255,0.07);
-      --blob-orange:        rgba(240,123,63,.06);
-      --blob-navy:          rgba(60,90,160,.22);
-      --input-bg:           rgba(19,28,48,0.90);
+      --blob-orange:        rgba(240,123,63,.12);
+      --blob-navy:          rgba(60,90,200,.28);
+      --input-bg:           rgba(12,21,38,0.90);
       --search-active-bg:   rgba(240,123,63,.08);
-      --hover-bg:           rgba(255,255,255,0.05);
-      --scrollbar-thumb:    #283048;
+      --hover-bg:           rgba(255,255,255,0.06);
+      --scrollbar-thumb:    #1A2A44;
       /* Semantic surface tokens */
-      --img-bg:             #172033;
-      --tag-green-bg:       rgba(39,174,96,.14);
+      --img-bg:             #111B2F;
+      --tag-green-bg:       rgba(39,174,96,.15);
       --tag-green-text:     #4ade80;
       --tag-green-border:   rgba(39,174,96,.30);
-      --tag-red-bg:         rgba(231,76,60,.12);
+      --tag-red-bg:         rgba(231,76,60,.13);
       --tag-red-text:       #f87171;
       --tag-red-border:     rgba(231,76,60,.25);
       --del-bg:             rgba(231,76,60,.10);
@@ -229,7 +232,7 @@
     .profile-wrap { position: relative; }
     .profile-pic {
       width: 40px; height: 40px; border-radius: 50%;
-      background: var(--navy); color: #fff;
+      background: var(--navy-bg); color: #fff;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; font-size: .85rem; overflow: hidden;
       box-shadow: 0 2px 6px rgba(30,45,74,.25);
@@ -527,6 +530,16 @@
     }
     .theme-toggle i { display: inline-block; }
     .theme-toggle i.icon-spin { animation: iconSpin .3s cubic-bezier(.34,1.3,.64,1); }
+    /* Dark mode: toggle button shows "selected" / active state */
+    [data-theme="dark"] .theme-toggle {
+      background: rgba(240,123,63,.15);
+      border-color: rgba(240,123,63,.45);
+      color: var(--orange);
+    }
+    [data-theme="dark"] .theme-toggle:hover {
+      background: rgba(240,123,63,.25);
+      border-color: var(--orange);
+    }
 
     /* ── Responsive ─────────────────────────────── */
     @media (max-width: 768px) {
@@ -610,7 +623,7 @@
 
     <!-- Theme toggle -->
     <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme">
-      <i id="theme-icon" class="fas fa-sun"></i>
+      <i id="theme-icon" class="fas fa-moon"></i>
     </button>
 
     <!-- Profile -->
@@ -871,7 +884,8 @@ var QR = {
   if (!btn) return;
 
   function syncIcon(theme, animate) {
-    var cls = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    /* moon = you're in dark mode, sun = you're in light mode */
+    var cls = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
     if (animate) {
       icon.className = cls + ' icon-spin';
       icon.addEventListener('animationend', function(){ icon.classList.remove('icon-spin'); }, { once: true });
