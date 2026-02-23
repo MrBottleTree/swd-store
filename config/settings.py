@@ -46,7 +46,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.CampusDetectorMiddleware',
+    'core.middleware.AccessLogMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -123,4 +123,35 @@ GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
 GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
 
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
+
+# Access logging
+_LOGS_DIR = BASE_DIR / 'logs'
+os.makedirs(_LOGS_DIR, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'access': {
+            'format': '%(asctime)s %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'access_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(_LOGS_DIR / 'access.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10 MB per file
+            'backupCount': 5,
+            'formatter': 'access',
+        },
+    },
+    'loggers': {
+        'core.access': {
+            'handlers': ['access_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
