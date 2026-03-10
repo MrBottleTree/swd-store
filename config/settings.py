@@ -136,14 +136,25 @@ LOGGING = {
             'format': '%(asctime)s %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'access_file': {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(_LOGS_DIR / 'access.log'),
-            'maxBytes': 10 * 1024 * 1024,  # 10 MB per file
+            'maxBytes': 10 * 1024 * 1024,
             'backupCount': 5,
             'formatter': 'access',
+        },
+        'error_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(_LOGS_DIR / 'django_errors.log'),
+            'maxBytes': 20 * 1024 * 1024,  # 20 MB
+            'backupCount': 10,
+            'formatter': 'verbose',
         },
     },
     'loggers': {
@@ -151,6 +162,11 @@ LOGGING = {
             'handlers': ['access_file'],
             'level': 'INFO',
             'propagate': False,
+        },
+        'django': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': True,
         },
     },
 }
