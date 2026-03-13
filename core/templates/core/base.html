@@ -21,6 +21,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/icon_192.png' %}">
   <link rel="icon" type="image/png" href="{% static 'images/icon.png' %}">
   <link rel="apple-touch-icon" href="{% static 'images/icon_192.png' %}">
+  <link rel="manifest" href="/manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -920,5 +921,10 @@ var QR = {
 </script>
 
 {% block extra_js %}{% endblock %}
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
 </body>
 </html>
