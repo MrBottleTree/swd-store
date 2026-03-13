@@ -768,7 +768,7 @@ def manifest_json(request):
                 "purpose": "any maskable"
             },
             {
-                "src": request.build_absolute_uri(staticfiles_storage.url('images/icon.png')),
+                "src": request.build_absolute_uri(staticfiles_storage.url('images/icon_512.png')),
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "any maskable"
@@ -783,7 +783,7 @@ def service_worker(request):
 
 
 def favicon_redirect(request):
-    return HttpResponsePermanentRedirect(staticfiles_storage.url('images/icon.png'))
+    return HttpResponsePermanentRedirect(staticfiles_storage.url('images/icon_512.png'))
 
 
 def rate_limited(request, exception=None):
