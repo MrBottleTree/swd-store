@@ -156,6 +156,10 @@ LOGGING = {
             'backupCount': 10,
             'formatter': 'verbose',
         },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'core.access': {
@@ -164,7 +168,7 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'handlers': ['error_file'],
+            'handlers': ['error_file', 'console'],
             'level': 'ERROR',
             'propagate': True,
         },

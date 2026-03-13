@@ -4,8 +4,9 @@ import secrets
 import requests
 from django.core.files.base import ContentFile
 from urllib.parse import urlencode
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -749,6 +750,40 @@ def page_not_found(request, exception):
 
 def server_error(request):
     return render(request, 'core/500.html', status=500)
+
+
+def manifest_json(request):
+    return JsonResponse({
+        "name": "SWD Store",
+        "short_name": "SWD Store",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#F5F4F1",
+        "theme_color": "#F07B3F",
+        "icons": [
+            {
+                "src": request.build_absolute_uri(staticfiles_storage.url('images/icon_192.png')),
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": request.build_absolute_uri(staticfiles_storage.url('images/icon.png')),
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }
+        ]
+    }, content_type='application/manifest+json')
+
+
+def service_worker(request):
+    js = "self.addEventListener('fetch', function(event) {});"
+    return HttpResponse(js, content_type='application/javascript')
+
+
+def favicon_redirect(request):
+    return HttpResponsePermanentRedirect(staticfiles_storage.url('images/icon.png'))
 
 
 def rate_limited(request, exception=None):
