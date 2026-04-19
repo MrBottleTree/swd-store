@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
+from django.contrib.auth.models import User, Group
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -27,7 +29,7 @@ class SWDAdminSite(admin.AdminSite):
         app_list = super().get_app_list(request, app_label)
         if app_label is None:
             try:
-                url = reverse('admin:analytics')
+                url = reverse(f'{self.name}:analytics')
             except Exception:
                 return app_list
             app_list.insert(0, {
@@ -44,6 +46,9 @@ class SWDAdminSite(admin.AdminSite):
                 }],
             })
         return app_list
+
+
+swd_admin_site = SWDAdminSite(name='admin')
 
 
 class ImageInline(admin.TabularInline):
@@ -79,7 +84,6 @@ class FeedbackImageInline(admin.TabularInline):
         return '—'
 
 
-@admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'email', 'campus', 'hostel', 'phone', 'is_subscribed', 'registered_at')
     list_display_links = ('id', 'name')
@@ -110,7 +114,6 @@ class PersonAdmin(admin.ModelAdmin):
         self.message_user(request, f"{updated} person(s) unsubscribed.")
 
 
-@admin.register(Hostel)
 class HostelAdmin(admin.ModelAdmin):
     list_display = ('name', 'campus', 'resident_count')
     list_filter = ('campus',)
@@ -122,7 +125,6 @@ class HostelAdmin(admin.ModelAdmin):
         return obj.residents.count()
 
 
-@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'item_count', 'icon_class', 'added_at')
     list_display_links = ('id', 'name')
@@ -141,7 +143,6 @@ class CategoryAdmin(admin.ModelAdmin):
         self.message_user(request, f"Recomputed item_count for {total} categor(ies).")
 
 
-@admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'price', 'seller', 'category', 'hostel',
@@ -199,7 +200,6 @@ class ItemAdmin(admin.ModelAdmin):
         self.message_user(request, f"{updated} item(s) reposted.")
 
 
-@admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'preview', 'item', 'display_order', 'added_at')
     list_display_links = ('id', 'preview')
@@ -219,7 +219,6 @@ class ImageAdmin(admin.ModelAdmin):
         return '—'
 
 
-@admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('id', 'person', 'message_preview', 'added_at')
     list_display_links = ('id', 'message_preview')
@@ -237,7 +236,6 @@ class FeedbackAdmin(admin.ModelAdmin):
         return (msg[:80] + '…') if len(msg) > 80 else (msg or '—')
 
 
-@admin.register(Reaction)
 class ReactionAdmin(admin.ModelAdmin):
     list_display = ('id', 'item', 'person', 'reaction_type', 'created_at')
     list_filter = ('reaction_type', 'created_at')
@@ -248,7 +246,6 @@ class ReactionAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
 
-@admin.register(PageView)
 class PageViewAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'status', 'method', 'path', 'email', 'campus', 'device', 'ip')
     list_filter = ('method', 'status', 'campus', 'device')
@@ -261,7 +258,6 @@ class PageViewAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(LogIngestState)
 class LogIngestStateAdmin(admin.ModelAdmin):
     list_display = ('filename', 'signature', 'byte_offset', 'last_ingested')
     readonly_fields = ('signature', 'filename', 'byte_offset', 'last_ingested')
@@ -269,3 +265,16 @@ class LogIngestStateAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+swd_admin_site.register(Person, PersonAdmin)
+swd_admin_site.register(Hostel, HostelAdmin)
+swd_admin_site.register(Category, CategoryAdmin)
+swd_admin_site.register(Item, ItemAdmin)
+swd_admin_site.register(Image, ImageAdmin)
+swd_admin_site.register(Feedback, FeedbackAdmin)
+swd_admin_site.register(Reaction, ReactionAdmin)
+swd_admin_site.register(PageView, PageViewAdmin)
+swd_admin_site.register(LogIngestState, LogIngestStateAdmin)
+swd_admin_site.register(User, UserAdmin)
+swd_admin_site.register(Group, GroupAdmin)
