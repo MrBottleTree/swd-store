@@ -1,0 +1,590 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Analytics · {{ site_title|default:"Django site admin" }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+  /* Force light color scheme on the analytics surface regardless of OS/admin dark mode,
+     and redefine every Django admin CSS var used inside the wrapper so nothing leaks. */
+  .a-wrap,
+  .a-wrap * {
+    color-scheme: light;
+  }
+  .a-wrap {
+    --body-bg: #f6f7f9;
+    --body-fg: #0f172a;
+    --body-quiet-color: #64748b;
+    --body-medium-color: #334155;
+    --body-loud-color: #0f172a;
+    --hairline-color: #e2e8f0;
+    --border-color: #e2e8f0;
+    --link-fg: #0b5fff;
+    --link-hover-color: #0848c4;
+
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --ink: #0f172a;
+    --ink-2: #334155;
+    --ink-3: #64748b;
+    --ink-4: #94a3b8;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --accent: #0f172a;
+    --accent-weak: #eef2ff;
+    --row-hover: #f8fafc;
+
+    --brand-navy: #1e293b;
+    --brand-orange: #ea580c;
+    --brand-blue: #2563eb;
+    --brand-green: #047857;
+    --brand-violet: #6d28d9;
+    --brand-amber: #b45309;
+    --brand-teal: #0f766e;
+    --brand-pink: #be185d;
+    --brand-slate: #475569;
+  }
+
+  html, body, #container, #content { background: #f6f7f9 !important; }
+  #content { padding: 0 !important; }
+
+  .a-wrap {
+    background: var(--bg);
+    color: var(--ink);
+    min-height: calc(100vh - 80px);
+    padding: 28px 32px 64px;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .a-inner { max-width: 1400px; margin: 0 auto; }
+  .a-wrap * { box-sizing: border-box; }
+  .a-wrap code { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink-2); background: #f1f5f9; padding: 1px 6px; border-radius: 4px; }
+
+  /* Header */
+  .a-head {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;
+    flex-wrap: wrap; margin-bottom: 28px;
+  }
+  .a-head h1 {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--ink); margin: 0 0 6px 0; line-height: 1.2;
+  }
+  .a-head .a-sub {
+    color: var(--ink-3); font-size: 13px; font-weight: 500;
+  }
+  .a-head .a-sub strong { color: var(--ink-2); font-weight: 600; }
+
+  /* Range toggle */
+  .a-range {
+    display: inline-flex; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 2px;
+  }
+  .a-range a {
+    padding: 7px 14px; font-size: 12.5px; font-weight: 600;
+    color: var(--ink-3); text-decoration: none; border-radius: 6px;
+    transition: color .12s, background .12s;
+  }
+  .a-range a:hover { color: var(--ink); }
+  .a-range a.active { background: var(--ink); color: #fff; }
+
+  /* Section label */
+  .a-section {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--ink-4);
+    margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+  .a-section:first-of-type { margin-top: 0; }
+
+  /* KPI cards */
+  .a-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  .a-kpi { background: var(--surface); padding: 20px 22px; }
+  .a-kpi .lbl {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .09em; color: var(--ink-3); margin-bottom: 12px;
+  }
+  .a-kpi .val {
+    font-size: 30px; font-weight: 700; letter-spacing: -0.025em;
+    color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .a-kpi .delta {
+    display: inline-block; margin-left: 8px; font-size: 12px;
+    color: var(--ink-3); font-weight: 500;
+  }
+  .a-kpi .hint {
+    margin-top: 10px; font-size: 12px; color: var(--ink-3); line-height: 1.4;
+  }
+
+  /* Rows & cards */
+  .a-row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .a-row.cols-2 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .a-row.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .a-row.cols-equal-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 1100px) {
+    .a-row.cols-2, .a-row.cols-3, .a-row.cols-equal-2 { grid-template-columns: 1fr; }
+  }
+
+  .a-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px 22px; min-width: 0;
+  }
+  .a-card.tight { padding: 0; }
+  .a-card .head { padding: 18px 22px 0; }
+  .a-card h3 {
+    font-size: 14px; font-weight: 700; color: var(--ink);
+    margin: 0 0 4px 0; letter-spacing: -0.005em;
+  }
+  .a-card .sub { font-size: 12.5px; color: var(--ink-3); margin-bottom: 16px; line-height: 1.45; }
+  .a-card.tight .sub { margin-bottom: 0; padding-bottom: 14px; }
+  .a-card .chart-box { position: relative; height: 280px; }
+  .a-card .chart-box.sm { height: 200px; }
+  .a-card .chart-box.lg { height: 320px; }
+
+  /* Status pills */
+  .a-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .a-status-pill {
+    padding: 16px 14px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .a-status-pill .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; color: var(--ink); }
+  .a-status-pill .l { font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; margin-top: 8px; color: var(--ink-3); }
+  .a-status-pill.ok  { border-left: 3px solid #059669; }
+  .a-status-pill.red { border-left: 3px solid #2563eb; }
+  .a-status-pill.cli { border-left: 3px solid #d97706; }
+  .a-status-pill.srv { border-left: 3px solid #dc2626; }
+
+  /* Tables */
+  .a-tbl-wrap { overflow: auto; max-height: 420px; }
+  table.a-table { width: 100%; border-collapse: collapse; font-size: 13px; color: var(--ink); }
+  table.a-table th {
+    text-align: left; font-size: 10.5px; font-weight: 700;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: .09em;
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+    background: var(--surface); position: sticky; top: 0; z-index: 1;
+  }
+  table.a-table td {
+    padding: 11px 16px; border-bottom: 1px solid var(--line);
+    color: var(--ink); vertical-align: middle; background: var(--surface);
+  }
+  table.a-table tr:last-child td { border-bottom: none; }
+  table.a-table tbody tr:hover td { background: var(--row-hover); }
+  table.a-table td.num, table.a-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.a-table td.num { font-weight: 600; color: var(--ink); }
+  table.a-table td.rank { width: 32px; text-align: right; color: var(--ink-4); font-variant-numeric: tabular-nums; font-size: 12px; }
+  table.a-table .path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px; color: var(--ink-2); word-break: break-all;
+  }
+  table.a-table .muted { color: var(--ink-3); }
+  .a-badge {
+    display: inline-block; margin-left: 6px;
+    padding: 2px 8px; border-radius: 4px; background: #f1f5f9;
+    color: var(--ink-2); font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; border: 1px solid var(--line);
+  }
+  .a-badge.sold { background: #ecfdf5; color: #065f46; border-color: #bbf7d0; }
+
+  /* Mini horizontal bar visualization inside tables */
+  .a-bar { display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; }
+  .a-bar .track {
+    flex: 1; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;
+    max-width: 120px;
+  }
+  .a-bar .fill { height: 100%; background: var(--ink); border-radius: 2px; }
+  .a-bar .n { color: var(--ink); font-weight: 600; min-width: 40px; text-align: right; font-size: 13px; }
+
+  /* Feed */
+  .a-feed {
+    max-height: 440px; overflow-y: auto; padding: 0;
+  }
+  .a-feed .row {
+    display: grid; grid-template-columns: 90px 56px minmax(0, 1fr) auto;
+    gap: 14px; align-items: center; padding: 10px 22px;
+    font-size: 12.5px; border-bottom: 1px solid var(--line);
+  }
+  .a-feed .row:last-child { border-bottom: none; }
+  .a-feed .row:hover { background: var(--row-hover); }
+  .a-feed .time { color: var(--ink-3); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 500; }
+  .a-feed .method {
+    font-weight: 700; font-size: 10.5px; padding: 3px 7px; border-radius: 4px;
+    text-align: center; background: #f1f5f9; color: var(--ink-2); border: 1px solid var(--line);
+    letter-spacing: .03em;
+  }
+  .a-feed .method.m-post { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .a-feed .method.m-put, .a-feed .method.m-patch { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
+  .a-feed .method.m-delete { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+  .a-feed .path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .a-feed .who {
+    color: var(--ink-3); font-size: 12px; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;
+  }
+  .a-feed .who strong { color: var(--ink-2); font-weight: 600; }
+  .a-feed .status { font-weight: 700; font-variant-numeric: tabular-nums; margin-right: 6px; }
+  .s-2 { color: #059669; } .s-3 { color: #2563eb; } .s-4 { color: #d97706; } .s-5 { color: #dc2626; }
+
+  .a-empty { text-align: center; padding: 48px 16px; color: var(--ink-3); font-size: 13px; }
+  .a-meta { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+
+  /* Tighten Django admin breadcrumbs to match */
+  div.breadcrumbs { background: var(--brand-navy); border: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="a-wrap">
+<div class="a-inner">
+
+  <div class="a-head">
+    <div>
+      <h1>Traffic Analytics</h1>
+      <div class="a-sub">
+        {% if kpi.latest_ts %}
+          Last log line ingested <strong>{{ kpi.latest_ts|date:"M j, H:i" }}</strong>.
+          Source: <code>logs/access.log*</code>.
+        {% else %}
+          No log data ingested yet. Hit the site to generate traffic, then reload this page.
+        {% endif %}
+      </div>
+    </div>
+    <div class="a-range">
+      {% for key, label in ranges %}
+        <a href="?range={{ key }}" class="{% if range_key == key %}active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="a-section">Overview</div>
+  <div class="a-kpi-grid">
+    <div class="a-kpi">
+      <div class="lbl">Pageviews</div>
+      <div class="val">{{ kpi.pageviews }}</div>
+      <div class="hint">requests in the selected range</div>
+    </div>
+    <div class="a-kpi">
+      <div class="lbl">Unique users</div>
+      <div class="val">{{ kpi.unique_emails }}</div>
+      <div class="hint">distinct authenticated emails</div>
+    </div>
+    <div class="a-kpi">
+      <div class="lbl">Unique IPs</div>
+      <div class="val">{{ kpi.unique_ips }}</div>
+      <div class="hint">distinct network addresses</div>
+    </div>
+    <div class="a-kpi">
+      <div class="lbl">New activity</div>
+      <div class="val">{{ kpi.new_persons }}</div>
+      <div class="hint">signups · {{ kpi.new_items }} listings · {{ kpi.new_reactions }} reactions · {{ kpi.new_feedback }} feedback</div>
+    </div>
+  </div>
+
+  <div class="a-section">Traffic trends</div>
+  <div class="a-row cols-2">
+    <div class="a-card">
+      <h3>Pageviews over time</h3>
+      <div class="sub">Daily volume split by authenticated versus anonymous. The dashed line tracks distinct authenticated users.</div>
+      <div class="chart-box lg"><canvas id="chartDaily"></canvas></div>
+    </div>
+    <div class="a-card">
+      <h3>Traffic by campus</h3>
+      <div class="sub">Share of pageviews by the visitor's inferred campus.</div>
+      <div class="chart-box"><canvas id="chartCampus"></canvas></div>
+    </div>
+  </div>
+
+  <div class="a-section">Client breakdown</div>
+  <div class="a-row cols-3">
+    <div class="a-card">
+      <h3>Browsers</h3>
+      <div class="sub">Top 8 by request count.</div>
+      <div class="chart-box sm"><canvas id="chartBrowser"></canvas></div>
+    </div>
+    <div class="a-card">
+      <h3>Operating systems</h3>
+      <div class="sub">Top 8 by request count.</div>
+      <div class="chart-box sm"><canvas id="chartOs"></canvas></div>
+    </div>
+    <div class="a-card">
+      <h3>Devices</h3>
+      <div class="sub">Top 8 by request count.</div>
+      <div class="chart-box sm"><canvas id="chartDevice"></canvas></div>
+    </div>
+  </div>
+
+  <div class="a-section">Top content</div>
+  <div class="a-row cols-equal-2">
+    <div class="a-card tight">
+      <div class="head">
+        <h3>Top pages</h3>
+        <div class="sub">Most requested paths in the selected range.</div>
+      </div>
+      <div class="a-tbl-wrap">
+        <table class="a-table">
+          <thead>
+            <tr><th style="width:32px"></th><th>Path</th><th class="num" style="width:140px">Views</th><th class="num muted" style="width:90px">Uniques</th></tr>
+          </thead>
+          <tbody>
+            {% for r in top_pages %}
+              <tr>
+                <td class="rank">{{ forloop.counter }}</td>
+                <td class="path">{{ r.path }}</td>
+                <td class="num"><div class="a-bar"><span class="track"><span class="fill" data-pct="top-pages-{{ forloop.counter0 }}" style="width: 0%"></span></span><span class="n">{{ r.views }}</span></div></td>
+                <td class="num muted">{{ r.uniques }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="a-empty">No data.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="a-card tight">
+      <div class="head">
+        <h3>Top items</h3>
+        <div class="sub">Most-viewed listings (paths matching <code>/item/&lt;id&gt;</code>).</div>
+      </div>
+      <div class="a-tbl-wrap">
+        <table class="a-table">
+          <thead>
+            <tr><th style="width:32px"></th><th>Item</th><th>Seller</th><th class="num" style="width:140px">Views</th></tr>
+          </thead>
+          <tbody>
+            {% for r in top_items %}
+              <tr>
+                <td class="rank">{{ r.id }}</td>
+                <td>
+                  {{ r.name|truncatechars:55 }}
+                  {% if r.is_sold %}<span class="a-badge sold">sold</span>{% endif %}
+                </td>
+                <td class="muted">{{ r.seller }}</td>
+                <td class="num"><div class="a-bar"><span class="track"><span class="fill" data-pct="top-items-{{ forloop.counter0 }}" style="width: 0%"></span></span><span class="n">{{ r.views }}</span></div></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="a-empty">No item pageviews yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="a-row cols-equal-2">
+    <div class="a-card tight">
+      <div class="head">
+        <h3>Top sellers</h3>
+        <div class="sub">Aggregate item-detail views across each seller's listings.</div>
+      </div>
+      <div class="a-tbl-wrap">
+        <table class="a-table">
+          <thead>
+            <tr><th style="width:32px"></th><th>Seller</th><th class="num" style="width:140px">Views</th></tr>
+          </thead>
+          <tbody>
+            {% for name, views in top_sellers %}
+              <tr>
+                <td class="rank">{{ forloop.counter }}</td>
+                <td>{{ name }}</td>
+                <td class="num"><div class="a-bar"><span class="track"><span class="fill" data-pct="top-sellers-{{ forloop.counter0 }}" style="width: 0%"></span></span><span class="n">{{ views }}</span></div></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="a-empty">No data.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="a-card">
+      <h3>Response status</h3>
+      <div class="sub">HTTP status distribution for the selected range.</div>
+      <div class="a-status-grid" id="statusGrid"></div>
+      <div class="a-meta">Non-2xx responses may indicate redirects, bot traffic, or real errors worth inspecting.</div>
+    </div>
+  </div>
+
+  <div class="a-section">Live activity</div>
+  <div class="a-card tight">
+    <div class="head">
+      <h3>Recent requests</h3>
+      <div class="sub">Last 50 requests, newest first. Auto-refreshes every 30 seconds.</div>
+    </div>
+    <div id="feed" class="a-feed"><div class="a-empty">Loading…</div></div>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  const daily   = {{ chart_daily|safe }};
+  const campus  = {{ chart_campus|safe }};
+  const browser = {{ chart_browser|safe }};
+  const osData  = {{ chart_os|safe }};
+  const device  = {{ chart_device|safe }};
+  const status  = {{ chart_status|safe }};
+  const topPages = [{% for r in top_pages %}{{ r.views }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const topItems = [{% for r in top_items %}{{ r.views }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const topSellers = [{% for _, views in top_sellers %}{{ views }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  // Paint the inline bars from the max of each group
+  const paintBars = (prefix, arr) => {
+    if (!arr.length) return;
+    const max = Math.max.apply(null, arr) || 1;
+    arr.forEach((v, i) => {
+      const el = document.querySelector(`[data-pct="${prefix}-${i}"]`);
+      if (el) el.style.width = (v / max * 100).toFixed(1) + '%';
+    });
+  };
+  paintBars('top-pages', topPages);
+  paintBars('top-items', topItems);
+  paintBars('top-sellers', topSellers);
+
+  // Restrained editorial palette — navy-forward, orange accent, a few supporting tones
+  const C = {
+    navy:   '#1e293b',
+    orange: '#ea580c',
+    blue:   '#2563eb',
+    green:  '#047857',
+    violet: '#6d28d9',
+    amber:  '#b45309',
+    teal:   '#0f766e',
+    pink:   '#be185d',
+    slate:  '#475569',
+  };
+  const palette = [C.navy, C.orange, C.blue, C.teal, C.violet, C.amber, C.green, C.pink, C.slate];
+
+  Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif';
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = '#334155';
+  Chart.defaults.borderColor = '#e2e8f0';
+
+  const fade = (hex, a) => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+  };
+  const grid = '#eef2f6';
+  const tick = '#64748b';
+  const tooltipBase = {
+    backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#e2e8f0',
+    borderColor: '#1e293b', borderWidth: 1, padding: 10, cornerRadius: 6,
+    titleFont: { weight: '600', size: 12 }, bodyFont: { size: 12 }, displayColors: false,
+  };
+
+  new Chart(document.getElementById('chartDaily'), {
+    type: 'line',
+    data: {
+      labels: daily.labels,
+      datasets: [
+        {
+          label: 'Authenticated', data: daily.authed,
+          borderColor: C.navy, backgroundColor: fade(C.navy, .10),
+          fill: true, tension: .35, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+        },
+        {
+          label: 'Anonymous', data: daily.anon,
+          borderColor: C.orange, backgroundColor: fade(C.orange, .10),
+          fill: true, tension: .35, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+        },
+        {
+          label: 'Unique users', data: daily.unique,
+          borderColor: C.slate, backgroundColor: 'transparent',
+          borderDash: [6, 4], borderWidth: 1.5, tension: .35, pointRadius: 0, pointHoverRadius: 4,
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, padding: 16, color: '#334155', font: { weight: '600', size: 12 } } },
+        tooltip: tooltipBase,
+      },
+      scales: {
+        x: { grid: { display: false }, border: { color: '#e2e8f0' }, ticks: { color: tick } },
+        y: { beginAtZero: true, grid: { color: grid, drawTicks: false }, border: { display: false }, ticks: { color: tick, precision: 0, padding: 8 } },
+      },
+    },
+  });
+
+  new Chart(document.getElementById('chartCampus'), {
+    type: 'doughnut',
+    data: {
+      labels: campus.labels,
+      datasets: [{ data: campus.data, backgroundColor: palette, borderColor: '#ffffff', borderWidth: 2 }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '64%',
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, padding: 12, color: '#334155', font: { weight: '600', size: 12 } } },
+        tooltip: { ...tooltipBase, displayColors: true },
+      },
+    },
+  });
+
+  const mkBar = (id, dataset, color) => new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels: dataset.labels,
+      datasets: [{ data: dataset.data, backgroundColor: color, borderRadius: 3, barThickness: 14 }],
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: tooltipBase },
+      scales: {
+        x: { beginAtZero: true, grid: { color: grid, drawTicks: false }, border: { display: false }, ticks: { color: tick, precision: 0, padding: 6 } },
+        y: { grid: { display: false }, border: { display: false }, ticks: { color: '#334155', font: { weight: '600', size: 11.5 } } },
+      },
+    },
+  });
+  mkBar('chartBrowser', browser, C.navy);
+  mkBar('chartOs', osData, C.slate);
+  mkBar('chartDevice', device, C.teal);
+
+  const sg = document.getElementById('statusGrid');
+  const pills = [
+    { k: '2xx', cls: 'ok',  label: 'Success' },
+    { k: '3xx', cls: 'red', label: 'Redirect' },
+    { k: '4xx', cls: 'cli', label: 'Client err' },
+    { k: '5xx', cls: 'srv', label: 'Server err' },
+  ];
+  sg.innerHTML = pills.map(p => `
+    <div class="a-status-pill ${p.cls}">
+      <div class="v">${status[p.k] || 0}</div>
+      <div class="l">${p.k} · ${p.label}</div>
+    </div>
+  `).join('');
+
+  const feedEl = document.getElementById('feed');
+  const recentUrl = "{% url 'admin:analytics_recent' %}";
+  const statusClass = s => s >= 500 ? 's-5' : s >= 400 ? 's-4' : s >= 300 ? 's-3' : 's-2';
+  const methodClass = m => m === 'POST' ? 'm-post' : m === 'PUT' || m === 'PATCH' ? 'm-put' : m === 'DELETE' ? 'm-delete' : '';
+  const escapeHtml = s => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+  const fmtTime = iso => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+  const renderFeed = rows => {
+    if (!rows.length) { feedEl.innerHTML = '<div class="a-empty">No activity yet.</div>'; return; }
+    feedEl.innerHTML = rows.map(r => `
+      <div class="row">
+        <span class="time">${fmtTime(r.timestamp)}</span>
+        <span class="method ${methodClass(r.method)}">${escapeHtml(r.method)}</span>
+        <span class="path" title="${escapeHtml(r.path)}">${escapeHtml(r.path)}</span>
+        <span class="who"><span class="status ${statusClass(r.status)}">${r.status}</span><strong>${escapeHtml(r.name || r.email || 'anon')}</strong> · ${escapeHtml(r.campus_label)}</span>
+      </div>
+    `).join('');
+  };
+  const loadFeed = () => fetch(recentUrl, { credentials: 'same-origin' })
+    .then(r => r.json()).then(d => renderFeed(d.rows || [])).catch(() => {});
+  loadFeed();
+  setInterval(loadFeed, 30000);
+})();
+</script>
+{% endblock %}

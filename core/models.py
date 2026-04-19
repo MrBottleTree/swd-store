@@ -165,3 +165,40 @@ class Reaction(models.Model):
 
     def __str__(self):
         return f"{self.person} {self.reaction_type} → {self.item}"
+
+
+class PageView(models.Model):
+    timestamp = models.DateTimeField(db_index=True)
+    status = models.PositiveSmallIntegerField()
+    method = models.CharField(max_length=8)
+    path = models.CharField(max_length=500, db_index=True)
+    email = models.EmailField(blank=True, db_index=True)
+    name = models.CharField(max_length=100, blank=True)
+    person_id_ref = models.IntegerField(null=True, blank=True, db_index=True)
+    campus = models.CharField(max_length=5, blank=True, db_index=True)
+    browser = models.CharField(max_length=100, blank=True)
+    os = models.CharField(max_length=100, blank=True)
+    device = models.CharField(max_length=100, blank=True)
+    ip = models.CharField(max_length=64, blank=True)
+    item_id_ref = models.IntegerField(null=True, blank=True, db_index=True)
+    source_file = models.CharField(max_length=64)
+    line_hash = models.CharField(max_length=32, unique=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['campus', '-timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.timestamp} {self.method} {self.path}"
+
+
+class LogIngestState(models.Model):
+    signature = models.CharField(max_length=64, primary_key=True)
+    filename = models.CharField(max_length=128)
+    byte_offset = models.BigIntegerField(default=0)
+    last_ingested = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.filename} @ {self.byte_offset}"
