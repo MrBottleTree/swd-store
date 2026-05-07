@@ -1,5 +1,52 @@
+import io
+import os
 import urllib.parse
 from operator import attrgetter
+
+from django.core.files.base import ContentFile
+from PIL import Image as PILImage, ImageOps, UnidentifiedImageError
+
+
+_HEIC_CONTENT_TYPES = {'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'}
+_HEIC_EXTENSIONS = {'.heic', '.heif'}
+
+
+def normalize_uploaded_image(uploaded_file):
+    """Convert HEIC/HEIF uploads to JPEG; pass other images through unchanged.
+
+    iPhones save photos as HEIC by default and Pillow's stock build cannot decode
+    them, so Django's ImageField validation rejects the upload. We re-encode HEIC
+    to JPEG (with EXIF orientation applied) so the rest of the stack sees a normal
+    image. On any decode failure we return the original file so non-HEIC uploads
+    continue to surface their own validation errors.
+    """
+    if uploaded_file is None:
+        return uploaded_file
+
+    name = getattr(uploaded_file, 'name', '') or ''
+    content_type = (getattr(uploaded_file, 'content_type', '') or '').lower()
+    ext = os.path.splitext(name)[1].lower()
+
+    if content_type not in _HEIC_CONTENT_TYPES and ext not in _HEIC_EXTENSIONS:
+        return uploaded_file
+
+    try:
+        uploaded_file.seek(0)
+        with PILImage.open(uploaded_file) as img:
+            img = ImageOps.exif_transpose(img)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=90, optimize=True)
+    except (UnidentifiedImageError, OSError, ValueError):
+        try:
+            uploaded_file.seek(0)
+        except Exception:
+            pass
+        return uploaded_file
+
+    base = os.path.splitext(os.path.basename(name))[0] or 'image'
+    return ContentFile(buffer.getvalue(), name=f'{base}.jpg')
 
 
 def generate_whatsapp_link(phone_number, message=None):

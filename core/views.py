@@ -372,7 +372,7 @@ def add_product(request):
             item.save()
 
             for idx, image_file in enumerate(request.FILES.getlist('images')[:5]):
-                Image.objects.create(item=item, image=image_file, display_order=idx)
+                Image.objects.create(item=item, image=helper.normalize_uploaded_image(image_file), display_order=idx)
 
             messages.success(request, 'Product added successfully!')
             return redirect('core:my_listings')
@@ -442,7 +442,7 @@ def edit_item(request, id):
             # Append newly uploaded images
             next_order = len(existing_ids)
             for idx, image_file in enumerate(request.FILES.getlist('images')[:5 - next_order]):
-                Image.objects.create(item=item, image=image_file, display_order=next_order + idx)
+                Image.objects.create(item=item, image=helper.normalize_uploaded_image(image_file), display_order=next_order + idx)
 
             messages.success(request, 'Item updated successfully!')
             return redirect('core:my_listings')
@@ -583,7 +583,7 @@ def feedback(request):
             fb.person = person
             fb.save()
             for image in request.FILES.getlist('images'):
-                FeedbackImage.objects.create(feedback=fb, image=image)
+                FeedbackImage.objects.create(feedback=fb, image=helper.normalize_uploaded_image(image))
             messages.success(request, 'Thank you for your feedback!')
             if person:
                 return redirect('core:home')
