@@ -19,131 +19,195 @@
 .add-btn:hover { background: var(--orange-dark); }
 
 .listings-meta {
-  font-size: .82rem; color: var(--muted); margin-bottom: 16px;
+  font-size: .82rem; color: var(--muted); margin-bottom: 14px;
 }
+
+/* ── Filter row (tabs + select-all) ────────── */
+.filter-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.filter-tabs {
+  display: inline-flex; gap: 6px; flex-wrap: wrap;
+}
+.filter-tab {
+  appearance: none; background: var(--card); color: var(--navy);
+  border: 1.5px solid var(--border); border-radius: 50px;
+  padding: 7px 16px; font-size: .8rem; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all .15s;
+  min-height: 32px;
+}
+.filter-tab:hover { border-color: var(--orange); color: var(--orange); }
+.filter-tab.active {
+  background: var(--orange); color: #fff; border-color: var(--orange);
+}
+.sel-all-row {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .82rem; color: var(--muted); cursor: pointer;
+  user-select: none; padding: 6px 4px;
+}
+.sel-all-row input { accent-color: var(--orange); cursor: pointer; width: 16px; height: 16px; }
 
 /* ── Bulk toolbar ──────────────────────────── */
 .bulk-bar {
   position: sticky; top: 58px; z-index: 50;
-  background: var(--navy-bg); color: #fff;
-  border-radius: var(--radius-sm); padding: 12px 16px;
+  background: var(--glass-bg, rgba(255,255,255,.85));
+  backdrop-filter: var(--glass-blur, blur(18px) saturate(1.6));
+  -webkit-backdrop-filter: var(--glass-blur, blur(18px) saturate(1.6));
+  border: 1px solid var(--glass-border, var(--border));
+  color: var(--navy);
+  border-radius: var(--radius-sm); padding: 10px 14px;
   display: none; align-items: center; gap: 10px;
   flex-wrap: wrap; margin-bottom: 12px;
   box-shadow: var(--shadow);
 }
 .bulk-bar.visible { display: flex; }
-.bulk-bar-count { font-size: .875rem; font-weight: 700; margin-right: 4px; }
+.bulk-bar-count { font-size: .85rem; font-weight: 800; color: var(--orange); margin-right: 4px; }
 .bulk-bar-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
 .bulk-action-btn {
-  padding: 9px 14px; border-radius: 6px; font-size: .78rem; font-weight: 700; min-height: 36px;
-  border: none; cursor: pointer; font-family: inherit; transition: all .15s;
-  display: flex; align-items: center; gap: 5px;
+  padding: 8px 14px; border-radius: 6px; font-size: .78rem; font-weight: 700; min-height: 36px;
+  border: 1.5px solid transparent; cursor: pointer; font-family: inherit; transition: all .15s;
+  display: inline-flex; align-items: center; gap: 5px;
 }
-.bab-repost { background: #fff; color: var(--navy-bg); }
-.bab-repost:hover { background: var(--orange); color: #fff; }
-.bab-sold { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }
-.bab-sold:hover { background: rgba(255,255,255,.25); }
-.bab-delete { background: var(--red); color: #fff; }
-.bab-delete:hover { background: #c0392b; }
-.bab-clear { background: none; color: rgba(255,255,255,.6); font-size: .75rem; padding: 7px; }
-.bab-clear:hover { color: #fff; }
+.bab-repost { background: var(--orange-light); color: var(--orange); border-color: rgba(240,123,63,.3); }
+.bab-repost:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+.bab-sold { background: var(--bg); color: var(--navy); border-color: var(--border); }
+.bab-sold:hover { background: var(--tag-green-bg); color: var(--tag-green-text); border-color: var(--tag-green-border); }
+.bab-delete { background: var(--del-bg); color: var(--red); border-color: var(--del-border); }
+.bab-delete:hover { background: var(--red); color: #fff; border-color: var(--red); }
+.bab-clear { background: none; color: var(--muted); padding: 7px 9px; border: none; }
+.bab-clear:hover { color: var(--navy); }
 
-/* ── Select-all row ────────────────────────── */
-.sel-all-row {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 10px; font-size: .82rem; color: var(--muted); cursor: pointer;
-  user-select: none;
+@media (max-width: 640px) {
+  .bulk-bar {
+    position: fixed; top: auto; left: 12px; right: 12px; bottom: 84px;
+    margin-bottom: 0;
+  }
+  .bulk-bar-actions { width: 100%; margin-left: 0; }
+  .bulk-bar-actions .bulk-action-btn { flex: 1 1 0; justify-content: center; }
+  .bulk-bar-actions .bab-clear { flex: 0 0 auto; }
 }
-.sel-all-row input { accent-color: var(--orange); cursor: pointer; }
 
 /* ── Listing cards ─────────────────────────── */
 .listing-list { display: flex; flex-direction: column; gap: 10px; }
+.listing-list.bulk-padding { padding-bottom: 90px; }
 
 .listing-card {
   background: var(--card); border-radius: var(--radius);
   border: 1px solid var(--border); box-shadow: var(--shadow-sm);
-  padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start;
-  transition: border-color .2s;
+  padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
 }
-.listing-card.selected { border-color: var(--orange); background: var(--search-active-bg); }
+.listing-card:hover { box-shadow: var(--shadow); border-color: var(--border); }
+.listing-card.selected {
+  border-color: var(--orange);
+  background: var(--search-active-bg, var(--orange-light));
+  box-shadow: 0 0 0 1px var(--orange) inset, var(--shadow);
+}
 
 .listing-cb {
-  margin-top: 0; cursor: pointer; accent-color: var(--orange);
+  margin-top: 4px; cursor: pointer; accent-color: var(--orange);
   width: 20px; height: 20px; flex-shrink: 0;
   padding: 10px; box-sizing: content-box;
-  margin: -10px -6px -10px -10px;
+  margin: -6px -2px -10px -8px;
 }
 
-.listing-thumb { flex-shrink: 0; }
+.listing-thumb { flex-shrink: 0; position: relative; }
 .listing-thumb a { display: block; }
 .listing-img {
-  width: 80px; height: 80px; object-fit: cover;
-  border-radius: 10px; border: 1px solid var(--border); display: block;
+  width: 96px; height: 96px; object-fit: cover;
+  border-radius: 12px; border: 1px solid var(--border); display: block;
 }
 .listing-img-ph {
-  width: 80px; height: 80px; border-radius: 10px;
+  width: 96px; height: 96px; border-radius: 12px;
   background: var(--bg); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
-  color: var(--muted); font-size: 1.5rem; opacity: .5;
+  color: var(--muted); font-size: 1.6rem; opacity: .5;
 }
-@media (max-width: 400px) {
-  .listing-img, .listing-img-ph { width: 68px; height: 68px; }
+.thumb-badge {
+  position: absolute; top: 6px; left: 6px;
+  padding: 2px 8px; border-radius: 50px;
+  font-size: .68rem; font-weight: 800; letter-spacing: .3px;
+  text-transform: uppercase; line-height: 1.4;
+  background: var(--tag-red-bg); color: var(--tag-red-text);
+  border: 1.5px solid var(--tag-red-border);
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+@media (max-width: 480px) {
+  .listing-img, .listing-img-ph { width: 72px; height: 72px; border-radius: 10px; }
+  .thumb-badge { font-size: .6rem; padding: 1px 6px; top: 4px; left: 4px; }
+  .listing-card { padding: 12px 14px; gap: 12px; }
 }
 
 .listing-body { flex: 1; min-width: 0; }
 .listing-name {
-  font-size: .95rem; font-weight: 700; color: var(--navy);
+  font-size: .98rem; font-weight: 700; color: var(--navy);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   display: block; margin-bottom: 2px; transition: color .15s;
 }
 .listing-name:hover { color: var(--orange); }
 
-.listing-price { font-size: 1.05rem; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
+.listing-price { font-size: 1.1rem; font-weight: 800; color: var(--orange); margin-bottom: 8px; }
 
-.listing-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+.listing-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 12px; }
 .tag {
   padding: 2px 9px; border-radius: 50px; font-size: .72rem; font-weight: 700;
   border: 1.5px solid transparent;
 }
-.tag-active { background: var(--tag-green-bg); color: var(--tag-green-text); border-color: var(--tag-green-border); }
-.tag-sold { background: var(--tag-red-bg); color: var(--tag-red-text); border-color: var(--tag-red-border); }
 .tag-meta { background: var(--bg); color: var(--muted); border-color: var(--border); }
+.tag-meta i { margin-right: 3px; }
 
 /* Per-item actions */
 .listing-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .act {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 8px 13px; border-radius: 6px; min-height: 36px;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 13px; border-radius: 7px; min-height: 36px;
   font-size: .78rem; font-weight: 600; transition: all .15s;
   border: 1.5px solid transparent; cursor: pointer;
   white-space: nowrap;
 }
-.act-edit { background: var(--bg); color: var(--navy); border-color: var(--border); }
-.act-edit:hover { background: var(--border); }
+.act i { font-size: .78rem; }
+.act-edit { background: var(--navy-bg); color: #fff; border-color: var(--navy-bg); }
+.act-edit:hover { background: var(--navy); border-color: var(--navy); }
 .act-repost { background: var(--orange-light); color: var(--orange); border-color: rgba(240,123,63,.3); }
-.act-repost:hover { background: var(--orange); color: #fff; }
-.act-sold { background: var(--bg); color: var(--muted); border-color: var(--border); }
+.act-repost:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+.act-sold { background: var(--bg); color: var(--navy); border-color: var(--border); }
 .act-sold:hover { background: var(--tag-green-bg); color: var(--tag-green-text); border-color: var(--tag-green-border); }
-.act-del { background: var(--del-bg); color: var(--red); border-color: var(--del-border); }
+.act-del { background: transparent; color: var(--red); border-color: var(--del-border); }
 .act-del:hover { background: var(--tag-red-bg); }
-
-/* ── Empty state ───────────────────────────── */
-.empty-wrap {
-  text-align: center; padding: 60px 20px;
-  background: var(--card); border-radius: var(--radius);
-  border: 1px solid var(--border);
+@media (max-width: 480px) {
+  .act { padding: 8px 10px; min-width: 36px; justify-content: center; }
+  .act .act-label { display: none; }
+  .act i { font-size: .9rem; }
 }
-.empty-wrap i { font-size: 3rem; color: var(--muted); opacity: .4; display: block; margin-bottom: 14px; }
-.empty-wrap h3 { font-size: 1.05rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
-.empty-wrap p { font-size: .875rem; color: var(--muted); opacity: .7; margin-bottom: 20px; }
+
+/* ── Empty states ──────────────────────────── */
+.empty-wrap, .filter-empty {
+  text-align: center; padding: 50px 20px;
+  background: var(--card); border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+.empty-wrap { padding: 60px 20px; border-style: solid; }
+.empty-wrap i, .filter-empty i {
+  font-size: 2.6rem; color: var(--muted); opacity: .4;
+  display: block; margin-bottom: 12px;
+}
+.empty-wrap h3, .filter-empty h3 {
+  font-size: 1.05rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;
+}
+.empty-wrap p, .filter-empty p {
+  font-size: .875rem; color: var(--muted); opacity: .7; margin-bottom: 18px;
+}
 .empty-wrap a {
   display: inline-flex; align-items: center; gap: 6px;
   background: var(--orange); color: #fff;
   padding: 10px 22px; border-radius: var(--radius-sm);
   font-weight: 700; font-size: .875rem; transition: background .15s;
 }
-.empty-wrap a i { line-height: 1; }
+.empty-wrap a i { line-height: 1; font-size: .875rem; margin: 0; opacity: 1; color: #fff; display: inline; }
 .empty-wrap a:hover { background: var(--orange-dark); }
+.filter-empty { display: none; }
+.filter-empty.visible { display: block; }
 {% endblock %}
 
 {% block content %}
@@ -155,11 +219,26 @@
 </div>
 
 {% if listings %}
-<p class="listings-meta">{{ listings|length }} listing{{ listings|length|pluralize }}</p>
+<p class="listings-meta">
+  {{ listings|length }} listing{{ listings|length|pluralize }}
+</p>
 
 <form id="bulk-form" method="post">
   {% csrf_token %}
   <input type="hidden" name="selected_items" id="selected-items-input">
+
+  <!-- Filter tabs + select-all -->
+  <div class="filter-row">
+    <div class="filter-tabs" role="tablist">
+      <button type="button" class="filter-tab active" data-filter="all"    onclick="setFilter('all')">All</button>
+      <button type="button" class="filter-tab"        data-filter="active" onclick="setFilter('active')">Active</button>
+      <button type="button" class="filter-tab"        data-filter="sold"   onclick="setFilter('sold')">Sold</button>
+    </div>
+    <label class="sel-all-row">
+      <input type="checkbox" id="sel-all" onchange="toggleAll(this)">
+      Select all
+    </label>
+  </div>
 
   <!-- Bulk action bar (appears when items selected) -->
   <div id="bulk-bar" class="bulk-bar">
@@ -175,21 +254,16 @@
               onclick="if(confirm('Delete ' + selectedIds.size + ' item(s)?')) bulkDo('delete')">
         <i class="fas fa-trash"></i> Delete
       </button>
-      <button type="button" class="bulk-action-btn bab-clear" onclick="clearSel()">
+      <button type="button" class="bulk-action-btn bab-clear" onclick="clearSel()" aria-label="Clear selection">
         <i class="fas fa-times"></i>
       </button>
     </div>
   </div>
 
-  <!-- Select all -->
-  <label class="sel-all-row">
-    <input type="checkbox" id="sel-all" onchange="toggleAll(this)">
-    Select all
-  </label>
-
-  <div class="listing-list">
+  <div class="listing-list" id="listing-list">
     {% for item in listings %}
-    <div class="listing-card" id="card-{{ item.id }}">
+    <div class="listing-card" id="card-{{ item.id }}"
+         data-status="{% if item.is_sold %}sold{% else %}active{% endif %}">
       <input type="checkbox" class="listing-cb item-cb" value="{{ item.id }}"
              onchange="onCheck(this)">
 
@@ -202,6 +276,7 @@
             <div class="listing-img-ph"><i class="fas fa-image"></i></div>
           {% endif %}
           {% endwith %}
+          {% if item.is_sold %}<span class="thumb-badge">Sold</span>{% endif %}
         </a>
       </div>
 
@@ -211,33 +286,41 @@
           {% if item.seller.campus == 'DUB' %}AED{% else %}₹{% endif %}{{ item.price }}
         </div>
         <div class="listing-tags">
-          <span class="tag {% if item.is_sold %}tag-sold{% else %}tag-active{% endif %}">
-            {% if item.is_sold %}Sold{% else %}Active{% endif %}
-          </span>
-          {% if item.hostel %}<span class="tag tag-meta"><i class="fas fa-building" style="margin-right:3px"></i>{{ item.hostel.name }}</span>{% endif %}
-          <span class="tag tag-meta">{{ item.updated_at|timesince }} ago</span>
+          {% if item.hostel %}<span class="tag tag-meta"><i class="fas fa-building"></i>{{ item.hostel.name }}</span>{% endif %}
+          <span class="tag tag-meta"><i class="far fa-clock"></i>{{ item.updated_at|timesince }} ago</span>
         </div>
         <div class="listing-actions">
-          <a href="{% url 'core:edit_item' item.id %}" class="act act-edit">
-            <i class="fas fa-pen"></i> Edit
-          </a>
-          <a href="{% url 'core:repost' item.id %}" class="act act-repost">
-            <i class="fas fa-redo"></i> Repost
+          <a href="{% url 'core:edit_item' item.id %}" class="act act-edit" aria-label="Edit listing">
+            <i class="fas fa-pen"></i><span class="act-label">Edit</span>
           </a>
           {% if not item.is_sold %}
-          <a href="{% url 'core:mark_sold' item.id %}" class="act act-sold">
-            <i class="fas fa-check"></i> Mark Sold
+          <a href="{% url 'core:mark_sold' item.id %}" class="act act-sold" aria-label="Mark as sold">
+            <i class="fas fa-check"></i><span class="act-label">Mark Sold</span>
           </a>
           {% endif %}
+          <a href="{% url 'core:repost' item.id %}" class="act act-repost" aria-label="Repost listing">
+            <i class="fas fa-redo"></i><span class="act-label">Repost</span>
+          </a>
           <a href="{% url 'core:delete_item' item.id %}"
              onclick="return confirm('Delete \'{{ item.name|escapejs }}\'?')"
-             class="act act-del">
-            <i class="fas fa-trash"></i> Delete
+             class="act act-del" aria-label="Delete listing">
+            <i class="fas fa-trash"></i><span class="act-label">Delete</span>
           </a>
         </div>
       </div>
     </div>
     {% endfor %}
+  </div>
+
+  <div id="filter-empty-active" class="filter-empty">
+    <i class="fas fa-box-open"></i>
+    <h3>No active listings</h3>
+    <p>Everything you have is marked sold. Switch tabs to see them.</p>
+  </div>
+  <div id="filter-empty-sold" class="filter-empty">
+    <i class="fas fa-tag"></i>
+    <h3>No sold listings yet</h3>
+    <p>Once you mark items as sold they'll show up here.</p>
   </div>
 </form>
 
@@ -254,6 +337,7 @@
 {% block extra_js %}
 <script>
 var selectedIds = new Set();
+var currentFilter = 'all';
 
 function onCheck(cb) {
   var id = cb.value;
@@ -269,40 +353,90 @@ function onCheck(cb) {
 }
 
 function toggleAll(cb) {
+  var checked = cb.checked;
   document.querySelectorAll('.item-cb').forEach(function(box) {
-    box.checked = cb.checked;
-    onCheck(box);
+    if (box.disabled) return;
+    if (box.checked !== checked) {
+      box.checked = checked;
+      var id = box.value;
+      var card = document.getElementById('card-' + id);
+      if (checked) {
+        selectedIds.add(id);
+        card.classList.add('selected');
+      } else {
+        selectedIds.delete(id);
+        card.classList.remove('selected');
+      }
+    }
   });
+  syncBulkBar();
 }
 
 function clearSel() {
   document.querySelectorAll('.item-cb').forEach(function(cb) {
     cb.checked = false;
-    document.getElementById('card-' + cb.value).classList.remove('selected');
+    var card = document.getElementById('card-' + cb.value);
+    if (card) card.classList.remove('selected');
   });
   selectedIds.clear();
-  document.getElementById('sel-all').checked = false;
-  document.getElementById('sel-all').indeterminate = false;
+  var selAll = document.getElementById('sel-all');
+  selAll.checked = false;
+  selAll.indeterminate = false;
+  syncBulkBar();
+}
+
+function setFilter(value) {
+  currentFilter = value;
+  document.querySelectorAll('.filter-tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.filter === value);
+  });
+
+  var visibleCount = 0;
+  document.querySelectorAll('.listing-card').forEach(function(card) {
+    var status = card.dataset.status;
+    var show = (value === 'all' || status === value);
+    card.style.display = show ? '' : 'none';
+    var cb = card.querySelector('.item-cb');
+    cb.disabled = !show;
+    if (!show && cb.checked) {
+      cb.checked = false;
+      selectedIds.delete(cb.value);
+      card.classList.remove('selected');
+    }
+    if (show) visibleCount++;
+  });
+
+  // Per-filter empty states
+  var emptyActive = document.getElementById('filter-empty-active');
+  var emptySold = document.getElementById('filter-empty-sold');
+  if (emptyActive) emptyActive.classList.toggle('visible', value === 'active' && visibleCount === 0);
+  if (emptySold) emptySold.classList.toggle('visible', value === 'sold' && visibleCount === 0);
+
   syncBulkBar();
 }
 
 function syncBulkBar() {
   var bar = document.getElementById('bulk-bar');
   var countEl = document.getElementById('bulk-count');
+  var list = document.getElementById('listing-list');
   var n = selectedIds.size;
   if (n > 0) {
     bar.classList.add('visible');
     countEl.textContent = n + ' selected';
+    if (list) list.classList.add('bulk-padding');
   } else {
     bar.classList.remove('visible');
+    if (list) list.classList.remove('bulk-padding');
   }
   document.getElementById('selected-items-input').value = Array.from(selectedIds).join(',');
 
-  // Update select-all checkbox state
-  var all = document.querySelectorAll('.item-cb');
+  // Reflect "select all" state against the currently-visible rows only
+  var visible = document.querySelectorAll('.item-cb:not([disabled])');
   var selAll = document.getElementById('sel-all');
-  selAll.indeterminate = n > 0 && n < all.length;
-  selAll.checked = all.length > 0 && n === all.length;
+  if (selAll) {
+    selAll.indeterminate = n > 0 && n < visible.length;
+    selAll.checked = visible.length > 0 && n === visible.length;
+  }
 }
 
 function bulkDo(action) {
