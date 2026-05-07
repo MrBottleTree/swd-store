@@ -54,6 +54,15 @@
 .photo-slot.first-empty { border-color: var(--orange); background: var(--orange-light); }
 .photo-slot.first-empty .photo-slot-ph { color: var(--orange); }
 
+.photo-slot-loading {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  background: var(--bg); color: var(--muted);
+  font-size: .65rem; font-weight: 700; letter-spacing: .5px;
+}
+.photo-slot-loading i { font-size: 1.4rem; color: var(--orange); }
+.photo-slot.is-loading img { display: none; }
+
 .upload-hint {
   text-align: center; font-size: .85rem; color: var(--muted);
   padding: 12px; border-radius: var(--radius-sm);
@@ -295,13 +304,14 @@ function renderExistingSlot(url, imgId, position) {
   slots.appendChild(slot);
 }
 
-function renderNewSlot(src, fileIdx) {
+function renderNewSlot(fileIdx, opts) {
+  opts = opts || {};
   var slots = document.getElementById('photo-slots');
   var slot = document.createElement('div');
-  slot.className = 'photo-slot has-image';
+  slot.className = 'photo-slot has-image' + (opts.loading ? ' is-loading' : '');
   slot.dataset.newIdx = fileIdx;
   var img = document.createElement('img');
-  img.src = src;
+  if (opts.src) img.src = opts.src;
   var del = document.createElement('button');
   del.type = 'button';
   del.className = 'photo-slot-del';
@@ -312,8 +322,56 @@ function renderNewSlot(src, fileIdx) {
     syncState();
   };
   slot.appendChild(img);
+  if (opts.loading) {
+    var spinner = document.createElement('div');
+    spinner.className = 'photo-slot-loading';
+    spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>HEIC</span>';
+    slot.appendChild(spinner);
+  }
   slot.appendChild(del);
   slots.appendChild(slot);
+  return { slot: slot, img: img };
+}
+
+// ── HEIC handling ──────────────────────────────────────────────────────────
+function isHeicFile(file) {
+  var name = (file.name || '').toLowerCase();
+  var type = (file.type || '').toLowerCase();
+  return type === 'image/heic' || type === 'image/heif' ||
+         name.endsWith('.heic') || name.endsWith('.heif');
+}
+
+var heic2anyPromise = null;
+function loadHeic2any() {
+  if (heic2anyPromise) return heic2anyPromise;
+  heic2anyPromise = new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+    s.onload = function() {
+      if (window.heic2any) resolve(window.heic2any);
+      else reject(new Error('heic2any did not register'));
+    };
+    s.onerror = function() { reject(new Error('Failed to load heic2any')); };
+    document.head.appendChild(s);
+  });
+  return heic2anyPromise;
+}
+
+function previewHeic(file, rendered, fileIdx) {
+  loadHeic2any().then(function(heic2any) {
+    return heic2any({ blob: file, toType: 'image/jpeg', quality: 0.7 });
+  }).then(function(out) {
+    if (removedIdx.has(fileIdx) || !rendered.slot.parentNode) return;
+    var blob = Array.isArray(out) ? out[0] : out;
+    rendered.img.src = URL.createObjectURL(blob);
+    rendered.slot.classList.remove('is-loading');
+    var spin = rendered.slot.querySelector('.photo-slot-loading');
+    if (spin) spin.remove();
+  }).catch(function() {
+    if (removedIdx.has(fileIdx) || !rendered.slot.parentNode) return;
+    var spin = rendered.slot.querySelector('.photo-slot-loading');
+    if (spin) spin.innerHTML = '<i class="fas fa-image"></i><span>HEIC</span>';
+  });
 }
 
 // ── File selection ──────────────────────────────────────────────────────────
@@ -327,9 +385,14 @@ function handleImageSelect(input) {
     if (activeCount >= 5) return;
     var idx = newFiles.length;
     newFiles.push(file);
-    var reader = new FileReader();
-    reader.onload = function(e) { renderNewSlot(e.target.result, idx); };
-    reader.readAsDataURL(file);
+    if (isHeicFile(file)) {
+      var rendered = renderNewSlot(idx, { loading: true });
+      previewHeic(file, rendered, idx);
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(e) { renderNewSlot(idx, { src: e.target.result }); };
+      reader.readAsDataURL(file);
+    }
   });
   syncState();
 }
