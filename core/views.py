@@ -229,11 +229,7 @@ def home(request):
 
     items_query = items_query  # no reaction annotation needed
     items = helper.items_sort(items_query, sort_method)
-    try:
-        per_page = max(8, min(int(request.GET.get('per_page', '48')), 120))
-    except (ValueError, TypeError):
-        per_page = 48
-    paginator = Paginator(items, per_page)
+    paginator = Paginator(items, 60)
     page = request.GET.get('page')
     try:
         paginated_items = paginator.page(page)
