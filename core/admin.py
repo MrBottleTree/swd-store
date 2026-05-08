@@ -196,7 +196,12 @@ class ItemAdmin(admin.ModelAdmin):
 
     @admin.action(description='Repost (bump updated_at to now, mark unsold)')
     def repost_items(self, request, queryset):
-        updated = queryset.update(updated_at=timezone.now(), is_sold=False)
+        from django.db.models import F
+        updated = queryset.update(
+            updated_at=timezone.now(),
+            is_sold=False,
+            repost_count=F('repost_count') + 1,
+        )
         self.message_user(request, f"{updated} item(s) reposted.")
 
 
