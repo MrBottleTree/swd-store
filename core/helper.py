@@ -7,37 +7,68 @@ from django.core.files.base import ContentFile
 from PIL import Image as PILImage, ImageOps, UnidentifiedImageError
 
 
-_HEIC_CONTENT_TYPES = {'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'}
-_HEIC_EXTENSIONS = {'.heic', '.heif'}
+MAX_IMAGE_DIMENSION = 1600
+JPEG_QUALITY = 82
+
+
+def compress_image_bytes(source):
+    """Resize + re-encode an image as a compressed JPEG.
+
+    `source` may be any file-like object Pillow can open (UploadedFile, BytesIO,
+    a path, or an open file handle). Returns the JPEG bytes. Caller handles I/O.
+
+    Pipeline: bake EXIF rotation, flatten alpha onto white, downscale so the
+    longest edge is at most MAX_IMAGE_DIMENSION, save progressive JPEG at
+    JPEG_QUALITY with optimize=True. Raises whatever Pillow raises on bad input.
+    """
+    if hasattr(source, 'seek'):
+        try:
+            source.seek(0)
+        except Exception:
+            pass
+
+    with PILImage.open(source) as img:
+        img = ImageOps.exif_transpose(img)
+        if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+            rgba = img.convert('RGBA')
+            background = PILImage.new('RGB', rgba.size, (255, 255, 255))
+            background.paste(rgba, mask=rgba.split()[-1])
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        if max(img.size) > MAX_IMAGE_DIMENSION:
+            img.thumbnail(
+                (MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION),
+                PILImage.Resampling.LANCZOS,
+            )
+
+        buffer = io.BytesIO()
+        img.save(
+            buffer,
+            format='JPEG',
+            quality=JPEG_QUALITY,
+            optimize=True,
+            progressive=True,
+        )
+
+    return buffer.getvalue()
 
 
 def normalize_uploaded_image(uploaded_file):
-    """Convert HEIC/HEIF uploads to JPEG; pass other images through unchanged.
+    """Resize + re-encode every uploaded image as a compressed JPEG.
 
-    iPhones save photos as HEIC by default and Pillow's stock build cannot decode
-    them, so Django's ImageField validation rejects the upload. We re-encode HEIC
-    to JPEG (with EXIF orientation applied) so the rest of the stack sees a normal
-    image. On any decode failure we return the original file so non-HEIC uploads
-    continue to surface their own validation errors.
+    Phone uploads (iPhone HEIC, Android multi-MB JPEGs) are downscaled to a max
+    edge of MAX_IMAGE_DIMENSION and re-saved at JPEG_QUALITY so the home page
+    serves reasonable bytes instead of full-resolution camera output. On any
+    decode failure (corrupt file, unsupported format) we return the original
+    file so Django's ImageField validator surfaces its own clean error.
     """
     if uploaded_file is None:
         return uploaded_file
 
-    name = getattr(uploaded_file, 'name', '') or ''
-    content_type = (getattr(uploaded_file, 'content_type', '') or '').lower()
-    ext = os.path.splitext(name)[1].lower()
-
-    if content_type not in _HEIC_CONTENT_TYPES and ext not in _HEIC_EXTENSIONS:
-        return uploaded_file
-
     try:
-        uploaded_file.seek(0)
-        with PILImage.open(uploaded_file) as img:
-            img = ImageOps.exif_transpose(img)
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-            buffer = io.BytesIO()
-            img.save(buffer, format='JPEG', quality=90, optimize=True)
+        compressed = compress_image_bytes(uploaded_file)
     except (UnidentifiedImageError, OSError, ValueError):
         try:
             uploaded_file.seek(0)
@@ -45,8 +76,9 @@ def normalize_uploaded_image(uploaded_file):
             pass
         return uploaded_file
 
+    name = getattr(uploaded_file, 'name', '') or ''
     base = os.path.splitext(os.path.basename(name))[0] or 'image'
-    return ContentFile(buffer.getvalue(), name=f'{base}.jpg')
+    return ContentFile(compressed, name=f'{base}.jpg')
 
 
 def generate_whatsapp_link(phone_number, message=None):
