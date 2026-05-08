@@ -548,9 +548,7 @@ def bulk_action(request, action):
     if action == 'repost':
         count = 0
         for item in items:
-            item.is_sold = False
-            item.hostel = person.hostel
-            item.save()
+            item.repost()
             count += 1
         messages.success(request, f'Successfully reposted {count} item(s).')
     elif action == 'toggle_sold':
