@@ -394,7 +394,7 @@
     <div class="category-scroll" data-scroll-inner>
       <a href="?campus={{ selected_campus }}{% if query %}&q={{ query }}{% endif %}&sort={{ sort_method }}"
          class="cat-pill {% if not selected_category %}active{% endif %}">
-        All <span class="cnt">{{ paginator.count }}</span>
+        All <span class="cnt">{{ total_count }}</span>
       </a>
       {% for cat in categories_with_counts %}{% if cat.item_count > 0 %}
       <a href="?campus={{ selected_campus }}&c={{ cat.id }}{% if query %}&q={{ query }}{% endif %}&sort={{ sort_method }}"

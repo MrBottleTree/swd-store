@@ -225,6 +225,7 @@ def home(request):
             'item_count': cat_items.count(),
         })
     categories_with_counts.sort(key=lambda x: x['item_count'], reverse=True)
+    total_count = sum(c['item_count'] for c in categories_with_counts)
 
     items_query = items_query  # no reaction annotation needed
     items = helper.items_sort(items_query, sort_method)
@@ -285,6 +286,7 @@ def home(request):
         'selected_campus': selected_campus,
         'categories': categories,
         'categories_with_counts': categories_with_counts,
+        'total_count': total_count,
         'query': query or '',
         'sort_method': sort_method,
         'selected_category': category_id,
