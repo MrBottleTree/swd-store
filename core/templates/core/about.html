@@ -9,7 +9,7 @@
 
 /* App header */
 .about-app-hdr {
-  text-align: center; margin-bottom: 20px;
+  text-align: center; margin-bottom: 22px;
 }
 .about-app-hdr h1 {
   font-size: 1.6rem; font-weight: 800; color: var(--navy); letter-spacing: -.5px;
@@ -17,6 +17,21 @@
 }
 .about-app-hdr p {
   font-size: .875rem; color: var(--muted);
+}
+
+/* Section title */
+.about-section-title {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 4px 12px;
+}
+.about-section-title span {
+  font-size: .72rem; font-weight: 800; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--muted); white-space: nowrap;
+}
+.about-section-title::before,
+.about-section-title::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
 }
 
 /* Card */
@@ -31,41 +46,79 @@
   margin-bottom: 10px;
 }
 
-/* Developer section */
-.dev-section {
-  display: flex; align-items: center; gap: 16px;
-  padding: 20px 20px 18px;
+/* Founders */
+.founders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
 }
-.dev-avatar {
-  width: 72px; height: 72px; border-radius: 50%;
-  object-fit: cover; flex-shrink: 0;
+.founder-card {
+  position: relative;
+  display: flex; flex-direction: column;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* Name on top */
+.founder-name {
+  font-size: 1.05rem; font-weight: 800; color: var(--navy);
+  text-align: center; letter-spacing: -.3px;
+  padding: 14px 12px 12px;
+}
+
+/* Large circular image */
+.founder-photo {
+  width: 82%; aspect-ratio: 1 / 1;
+  margin: 2px auto 0; display: block;
+  border-radius: 50%; object-fit: cover;
   border: 3px solid rgba(255,255,255,.7);
-  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,.14);
 }
-.dev-info { flex: 1; min-width: 0; }
-.dev-name {
-  font-size: 1.05rem; font-weight: 800; color: var(--navy); margin-bottom: 2px;
+
+/* Body below image */
+.founder-body {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 14px 12px 16px;
 }
-.dev-role {
-  font-size: .8rem; color: var(--muted); font-weight: 500; margin-bottom: 6px;
-}
-.dev-tags {
-  display: flex; flex-wrap: wrap; gap: 5px;
-}
-.dev-tag {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: .73rem; font-weight: 600;
-  padding: 3px 9px; border-radius: 50px;
-}
-.dev-tag-campus {
+.founder-role {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .3px;
   color: var(--orange); background: var(--orange-light);
+  padding: 4px 11px; border-radius: 50px;
 }
-.dev-tag-email {
+.founder-role i { font-size: .66rem; }
+.founder-tags {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  width: 100%;
+}
+.founder-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%;
+  font-size: .72rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 50px;
   color: var(--navy-light); background: var(--hover-bg);
+}
+.founder-tag i { font-size: .68rem; flex-shrink: 0; }
+.founder-tag span {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+a.founder-tag {
   text-decoration: none; transition: background .15s;
 }
-.dev-tag-email:hover { background: var(--border); }
-.dev-tag i { font-size: .7rem; }
+a.founder-tag:hover { background: var(--border); }
+
+@media (max-width: 360px) {
+  .founders { gap: 8px; }
+  .founder-name { font-size: .95rem; padding: 12px 8px 10px; }
+  .founder-body { padding: 12px 8px 14px; }
+  .founder-tag { font-size: .68rem; padding: 4px 8px; }
+}
 
 /* Divider */
 .about-divider {
@@ -119,26 +172,45 @@
     <p>Student marketplace for BITS Pilani campuses</p>
   </div>
 
-  <!-- Developer card -->
-  <div class="about-card">
-    <div class="dev-section">
-      <img class="dev-avatar" src="{% static 'images/vishrut.png' %}" alt="Vishrut">
-      <div class="dev-info">
-        <div class="dev-name">Vishrut</div>
-        <div class="dev-role">Design &amp; Development</div>
-        <div class="dev-tags">
-          <span class="dev-tag dev-tag-campus">
-            <i class="fas fa-map-marker-alt"></i> BITS Pilani, Goa
+  <!-- Founders -->
+  <div class="about-section-title"><span>Founders</span></div>
+  <div class="founders">
+    <div class="founder-card">
+      <div class="founder-name">Vishrut</div>
+      <img class="founder-photo" src="{% static 'images/vishrut.png' %}" alt="Vishrut">
+      <div class="founder-body">
+        <span class="founder-role"><i class="fas fa-pen-ruler"></i> Design &amp; Development</span>
+        <div class="founder-tags">
+          <span class="founder-tag">
+            <i class="fas fa-map-marker-alt"></i> <span>BITS Pilani, Goa</span>
           </span>
-          <a href="mailto:vishrut172@gmail.com" class="dev-tag dev-tag-email">
-            <i class="fas fa-envelope"></i> vishrut172@gmail.com
+          <a href="mailto:vishrut172@gmail.com" class="founder-tag">
+            <i class="fas fa-envelope"></i> <span>vishrut172@gmail.com</span>
           </a>
         </div>
       </div>
     </div>
 
-    <hr class="about-divider">
+    <div class="founder-card">
+      <div class="founder-name">Ayush</div>
+      <img class="founder-photo" src="{% static 'images/ayush.png' %}" alt="Ayush">
+      <div class="founder-body">
+        <span class="founder-role"><i class="fas fa-lightbulb"></i> Ideation</span>
+        <div class="founder-tags">
+          <span class="founder-tag">
+            <i class="fas fa-map-marker-alt"></i> <span>BITS Pilani, Goa</span>
+          </span>
+          <a href="mailto:f20230742@goa.bits-pilani.ac.in" class="founder-tag">
+            <i class="fas fa-envelope"></i> <span>f20230742@goa.bits-pilani.ac.in</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- About the app -->
+  <div class="about-section-title"><span>About</span></div>
+  <div class="about-card">
     <div class="about-info-list">
       <div class="about-info-item">
         <i class="fas fa-store"></i>
